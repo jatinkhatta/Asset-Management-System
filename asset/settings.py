@@ -138,7 +138,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
  
 # Your existing secret key configuration
-SECRET_KEY = 'your_secret_key'  # Replace with a secure secret key
+SECRET_KEY = '1234'  # Replace with a secure secret key
 LOGIN_URL = 'login'  # URL where users will be redirected if not logged in
 
 
