@@ -1,0 +1,3816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Management - Asset Inventory</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+	
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #1e40af;
+            color: white;
+            padding: 2rem 0;
+        }
+        .sidebar a {
+            text-decoration: none; /* Removes underline */
+            color: inherit; /* Ensures the text color is inherited */
+            display: block; /* Makes the link span the full width of the div */
+        }
+
+
+        .logo {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .menu-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+
+        .menu-item:hover {
+            background: #1e3a8a;
+        }
+
+        .menu-item.active {
+            background: #1e3a8a;
+            border-left: 4px solid white;
+        }
+
+        .main-content {
+            flex: 1;
+            background: #f0f5ff;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between avatar and username */
+        }
+
+        .user-avatar {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background-color: #1e40af;
+            color: white;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .user-name {
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+        /* Logout Modal Background */
+        .logout-modal {
+            display: none; /* Modal should be hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Dark Overlay */
+            z-index: 1000;
+            display: flex; /* Flexbox layout to center the modal */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+        }
+
+        /* Logout Modal Box */
+        .logout-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Logout Modal Buttons */
+        .logout-modal-buttons {
+            margin-top: 15px;
+        }
+
+        .logout-btn {
+            background-color: #1e40af;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .logout-btn:hover {
+            background-color: #162d79;
+        }
+
+        .cancel-btn {
+            background-color: #ccc;
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel-btn:hover {
+            background-color: #bbb;
+        }
+
+        .inventory-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: start;
+           
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            min-width: 200px;
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            background: white;
+            min-width: 150px;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #1e40af;
+            color: white;
+        }
+                .asset-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+
+        .asset-image:hover {
+            transform: scale(1.1);
+        }
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .custom-modal.show {
+            opacity: 1;
+        }
+
+        .custom-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90vh;
+        }
+
+        #modalImage {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+       
+       
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            border-radius: 5px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .column-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .checkbox-item {
+            margin-bottom: 10px;
+        }
+        .inventory-table {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.inventory-table table {
+    width: max-content; /* This is the key change */
+    min-width: 100%;
+    overflow-x: auto;
+}
+
+
+        .inventory-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width:100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            min-width: 120px;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e40af;
+            white-space: nowrap;
+        }
+        tr:hover {
+            background: #f8fafc;
+        }
+        th.ascending::after {
+            content: " ▲";
+        }
+
+        th.descending::after {
+            content: " ▼";
+        }
+        
+        /* Style for the table */
+        #assetTable {
+            border-collapse: collapse;
+            width: 100%;
+
+        }
+
+        /* Make the header row sticky */
+        #assetTable thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2; /* Ensure it stays above the rows */
+            background-color: #f4f4f4; /* Add a background color */
+            border-bottom: 2px solid #ddd; /* Styling for the bottom border */
+            padding: 8px;
+            text-align: left;
+        }
+
+        
+        .table-container {
+            max-height: 500px; /* Limit the height for vertical scrolling */
+            overflow: auto; /* Allow scrolling */
+            border: 1px solid #ddd;
+            position: relative;
+        }
+        
+        @media (max-width: 768px) {
+            #assetTable thead th {
+                font-size: 12px;
+            }
+            #assetTable tbody td {
+                font-size: 12px;
+                padding: 6px;
+            }
+        }
+        /* Table container styles */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    position: relative;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Table styles */
+#assetTable {
+    width: max-content; /* Allow table to expand beyond container */
+    min-width: 100%; /* Ensure table is at least as wide as container */
+    border-collapse: collapse;
+    white-space: nowrap; /* Prevent text wrapping */
+}
+
+/* Header styles */
+#assetTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #f4f4f4;
+    border-bottom: 2px solid #ddd;
+    padding: 12px 16px; /* Increased padding for better readability */
+    text-align: left;
+    white-space: nowrap;
+}
+
+/* Cell styles */
+#assetTable td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    min-width: 120px; /* Minimum width for columns */
+}
+
+/* Custom column widths */
+#assetTable th[data-column="AssetID"] { min-width: 100px; }
+#assetTable th[data-column="AssetName"] { min-width: 200px; }
+#assetTable th[data-column="Category"] { min-width: 150px; }
+#assetTable th[data-column="Description"] { min-width: 300px; }
+#assetTable th[data-column="actions"] { min-width: 150px; }
+
+/* Scrollbar styling */
+.table-container::-webkit-scrollbar {
+    height: 8px; /* Horizontal scrollbar height */
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-in-use {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .status-available {
+            background: #dcfce7;
+            color: #22c55e;
+        }
+
+        .status-maintenance {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+        .availability {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .available {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #28a745;
+            box-shadow: 0 0 3px rgba(40, 167, 69, 0.2),
+                        0 0 4px rgba(40, 167, 69, 0.1);
+        }
+
+        .in-use {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #4299e1;
+            box-shadow: 0 0 3px rgba(66, 153, 225, 0.2),
+                        0 0 4px rgba(66, 153, 225, 0.1);
+        }
+        /* Base style for the download button */
+        .btn-download {
+            font-size: 30px; /* Larger font size for visibility */
+            color: #0074d9; /* Blue color */
+            text-decoration: none; /* Remove underline */
+            background-color: transparent; /* Transparent background */
+            border: none; /* No border */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: all 0.3s ease; /* Smooth transition for hover effects */
+        }
+
+        /* Base style for the download button */
+        .btn-download {
+            font-size: 20px; /* Reduced font size for the download symbol */
+            color: #0074d9; /* Blue color */
+            text-decoration: none; /* Remove underline */
+            background-color: transparent; /* Transparent background */
+            border: none; /* No border */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: all 0.3s ease; /* Smooth transition for hover effects */
+        }
+
+        /* Hover effect for the download button */
+        .btn-download:hover {
+            color: #0056b3; /* Darker blue color */
+            text-shadow: 0 0 5px #fff, 0 0 10px #0074d9, 0 0 15px #0074d9; /* Glow effect */
+        }
+
+        /* Center alignment for the table cell content */
+        .center-cell {
+            text-align: center; /* Horizontal centering */
+            vertical-align: middle; /* Vertical centering */
+            height: 40px; /* Adjusted height to match the smaller symbol */
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+        .btn-action.edit {
+            font-size: 30px;
+            color: #fbb53c; /* Light orange color */
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            }
+
+            .btn-action.edit:hover {
+            color: #f39c12; /* Stronger orange color */
+            text-shadow: 0 0 5px #fff, 0 0 10px #f39c12, 0 0 15px #f39c12; /* Stronger glow effect */
+            }
+                        .btn-action.notify {
+                font-size: 25px;
+                color: #ffeb3b; /* Neon yellow */
+                background-color: transparent;
+                border: none;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                
+                }
+
+                .btn-action.notify:hover {
+                color: #ffeb3b; /* Neon yellow on hover */
+                text-shadow: 0 0 5px #fff, 0 0 10px #ffeb3b, 0 0 15px #ffeb3b; /* Stronger neon glow */
+                }
+            .btn-action.red-btn {
+            font-size: 25px;
+            color: #ff5733; /* Dark red color */
+            background-color: transparent;
+            border: none; /* Dark red border */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            }
+
+            .btn-action.red-btn:hover {
+            color: #ff5733; /* Dark red color */
+            border: none; /* Dark red border */
+            text-shadow: 0 0 5px #fff, 0 0 10px #ff5733, 0 0 15px #ff5733; /* Red neon glow */
+            }
+        .asset-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        /* Adding new styles for Vendor modal */
+        .vendor-modal {
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .vendor-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .vendor-modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+            width: 70%;
+            max-width: 800px;
+            border-radius: 15px;
+            text-align: left;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            max-height: 80%;
+            overflow-y: auto;
+            transform: translateY(-50px);
+            transition: transform 0.3s ease-in-out;
+        }
+
+
+        .vendor-modal-header {
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            color: #0052cc;
+        }
+
+        .vendor-modal-body {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .vendor-modal-body p {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .vendor-modal-body strong {
+            margin-right: 10px;
+            min-width: 120px;
+            display: inline-block;
+        }
+   
+        .vendor-modal.show .vendor-modal-content {
+            transform: translateY(0);
+        }
+
+
+        .vendor-close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: #ff4d4d;
+            font-size: 24px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .vendor-close-button:hover {
+            color: #ff0000;
+        }
+
+        /* Adding new styles for export modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+      
+        .export-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-section {
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .filter-section h3 {
+            margin-bottom: 1rem;
+            color: #1e40af;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .export-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-row select, .filter-row input {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .add-filter-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #1e40af;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        .warranty-active {
+        color: green;
+        font-weight: bold;
+    }
+
+    .warranty-expired {
+        color: red;
+        font-weight: bold;
+    }
+           /* Modal Base Styles */
+.edit-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.edit-modal.show {
+    display: flex;
+}
+
+.edit-modal-content {
+    background-color: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: modalFadeIn 0.3s ease;
+    margin: auto;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal Header */
+.edit-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f8fafc;
+    border-radius: 8px 8px 0 0;
+}
+
+.edit-modal-header h2 {
+    margin: 0;
+    color: #1e40af;
+    font-size: 1.25rem;
+}
+
+.edit-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color 0.2s;
+}
+
+.edit-modal-close:hover {
+    color: #ef4444;
+}
+
+/* Form Layout */
+.edit-form-grid {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Form Controls */
+.edit-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.edit-form-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #475569;
+}
+
+.edit-form-group input,
+.edit-form-group select,
+.edit-form-group textarea {
+    padding: 0.5rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+}
+
+.edit-form-group input:focus,
+.edit-form-group select:focus,
+.edit-form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* File Input Styling */
+input[type="file"] {
+    width: 100%;
+    padding: 0.7rem;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    background-color: #ffffff;
+    transition: border-color 0.3s ease;
+}
+
+input[type="file"]:hover {
+    border-color: #3b82f6;
+}
+
+/* Image and Document Display */
+.current-image,
+.current-document {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background-color: #f9fafb;
+}
+
+.current-image img {
+    max-width: 120px;
+    max-height: 120px;
+    border-radius: 4px;
+    display: block;
+    margin-top: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
+}
+
+.current-image p,
+.current-document p {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+    margin-top: 0;
+}
+
+.document-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    transition: background-color 0.3s ease;
+}
+
+.document-link:hover {
+    background-color: #2563eb;
+}
+
+/* Calibration Section */
+#editCalibrationFields {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding-top: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Form Action Buttons */
+.form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.submit-btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+}
+
+.submit-btn:first-child {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border-color: #d1d5db;
+}
+
+.submit-btn:first-child:hover {
+    background-color: #e5e7eb;
+}
+
+.submit-btn:last-child {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.submit-btn:last-child:hover {
+    background-color: #2563eb;
+}/* --- Email Notification Modal (Restructured) --- */
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: none; /* Controlled by JS */
+    z-index: 1040;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Main Modal Container */
+.modal.email-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1050;
+    display: none; /* Controlled by JS */
+    overflow-x: hidden;
+    overflow-y: auto; /* Allow scrolling if content is too tall */
+    outline: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    /* Use flex to help center the dialog */
+    display: flex;
+    align-items: center; /* Vertical centering */
+    justify-content: center; /* Horizontal centering (redundant with margin auto) */
+    padding: 1rem; /* Add padding for smaller screens */
+    box-sizing: border-box;
+}
+
+.modal.email-modal.show {
+    display: flex; /* Use flex when shown */
+    opacity: 1;
+}
+/* Modal Dialog Box */
+.modal-dialog {
+    position: relative;
+    width: auto;
+    margin: auto; /* Center horizontally and vertically (with flex align-items) */
+    max-width: 1000px; /* Max width - Increased */
+    width: 90%; /* Responsive width - Stays the same */
+    pointer-events: none; /* Allow clicks on overlay */
+    transform: translateY(-20px); /* Start slightly up for transition */
+    transition: transform 0.3s ease-out;
+}
+.modal.show .modal-dialog {
+    transform: translateY(0); /* Move down into view */
+    pointer-events: auto; /* Enable clicks inside dialog */
+}
+
+/* Modal Content Box (White Box) */
+.modal-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, .2);
+    border-radius: 8px; /* Match theme */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .2);
+    outline: 0;
+    max-height: 90vh; /* Limit height */
+    overflow: hidden; /* Let body scroll */
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    align-items: center; /* Align title and close button */
+    justify-content: space-between; /* Space them out */
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb; /* Theme border */
+    border-top-left-radius: calc(8px - 1px);
+    border-top-right-radius: calc(8px - 1px);
+}
+
+.modal-title {
+    margin-bottom: 0;
+    line-height: 1.5;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e40af; /* Theme color */
+}
+
+.modal-close-btn {
+    padding: 0.5rem;
+    margin: -0.5rem -0.5rem -0.5rem auto; /* Align right */
+    background-color: transparent;
+    border: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #6b7280; /* Gray color */
+    text-shadow: 0 1px 0 #fff;
+    opacity: 0.7;
+    cursor: pointer;
+    appearance: none;
+}
+
+.modal-close-btn:hover {
+    opacity: 1;
+    color: #ef4444; /* Red on hover */
+}
+
+/* Modal Body */
+.modal-body {
+    position: relative;
+    flex: 1 1 auto; /* Allow body to grow and shrink */
+    padding: 1.5rem;
+    overflow-y: auto; /* Scroll only if body content overflows */
+}
+
+/* Form Group Styling */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #475569;
+    font-size: 0.875rem;
+}
+
+/* Shared Input/Select/Textarea Styling */
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #3b82f6; /* Theme focus color */
+    outline: 0;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Select Specific */
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1em 1em;
+    padding-right: 2.5rem; /* Space for arrow */
+}
+
+/* Textarea Specific */
+textarea.form-control {
+    resize: vertical;
+    min-height: 150px;
+}
+
+/* Modal Footer */
+.modal-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center; /* Align items vertically */
+    justify-content: flex-end; /* Align buttons to the right */
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb; /* Theme border */
+    border-bottom-right-radius: calc(8px - 1px);
+    border-bottom-left-radius: calc(8px - 1px);
+    gap: 0.75rem; /* Space between buttons */
+}
+
+/* Re-use existing button styles if possible */
+/* Example using your .btn classes */
+.modal-footer .btn {
+    /* Inherit base styles from .btn */
+    padding: 0.6rem 1.2rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    /* Add any overrides if needed */
+}
+
+.modal-footer .btn-primary {
+    /* Inherit from .btn-primary */
+    background-color: #1e40af;
+    color: white;
+    border: none; /* Assuming primary has no border */
+}
+.modal-footer .btn-primary:hover {
+    background-color: #1e3a8a;
+}
+
+.modal-footer .btn-secondary {
+    /* Inherit from .btn-secondary */
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #d1d5db; /* Assuming secondary has a border */
+}
+.modal-footer .btn-secondary:hover {
+    background-color: #e5e7eb;
+}
+        .assignment-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .current-assignment {
+        background-color: #f8f9fa;
+        padding: 6px 12px;
+        border-radius: 4px;
+        border-left: 3px solid #2171b5;
+    }
+    .current-assignment small {
+        display: block;
+        font-size: 0.85em;
+        color: #666;
+    }
+    .user-icon {
+        cursor: pointer;
+        background-color: #2171b5;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    .request-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 0.75em;
+    }
+    .request-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+    .request-modal-content {
+        position: relative;
+        background-color: white;
+        margin: 10% auto;
+        padding: 20px;
+        width: 80%;
+        max-width: 600px;
+        border-radius: 8px;
+    }
+    .close-modal {
+        position: absolute;
+        right: 20px;
+        top: 10px;
+        font-size: 24px;
+        cursor: pointer;
+    }
+    .request-list {
+        margin-top: 20px;
+    }
+    .request-item {
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        border-left: 3px solid #ccc;
+    }
+    .request-item.approved {
+        border-left-color: #28a745;
+    }
+    .request-item.pending {
+        border-left-color: #ffc107;
+    }
+    .request-user {
+        font-weight: 500;
+        color: #2171b5;
+    }
+    .request-dates {
+        font-size: 0.9em;
+        color: #666;
+        margin: 4px 0;
+    }
+    .request-status {
+        font-size: 0.85em;
+        font-weight: 500;
+        color: #28a745;
+    }
+    .request-item.pending .request-status {
+        color: #ffc107;
+    }
+    .request-purpose {
+        font-size: 0.85em;
+        font-weight: 500;
+        color: #666; /* Blue for "Purpose:" label */
+        margin-top: 4px;
+    }
+    /* Main button styles */
+.action-buttons {
+    margin: 20px 0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.print-btn {
+    padding: 10px 18px;
+    background-color: #2c7be5;
+    color: white;
+    border: none;
+    border-radius: 100%;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.print-btn:hover {
+    background-color: #1a68d1;
+}
+
+.print-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Print Modal styles */
+#printModal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    text-align: center;
+}
+
+/* Vertical centering technique */
+#printModal:before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    margin-right: -4px; /* Adjusts for inline-block spacing */
+}
+
+#printModal .modal-content {
+    position: relative;
+    background-color: #ffffff;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: left;
+    padding: 24px;
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    /* Let content determine width, with constraints */
+    width: auto;
+    max-width: 90%;
+}
+
+#printModal .modal-content h2 {
+    color: #212b36;
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: 600;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e6e8eb;
+    margin-bottom: 20px;
+}
+
+/* Close button */
+#printModal .close-btn {
+    position: absolute;
+    right: 20px;
+    top: 16px;
+    font-size: 22px;
+    font-weight: 400;
+    cursor: pointer;
+    color: #637381;
+    transition: color 0.2s ease;
+    line-height: 1;
+}
+
+#printModal .close-btn:hover {
+    color: #212b36;
+}
+
+/* Table container */
+#printModal #printable-content {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Table styles */
+.asset-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e6e8eb;
+    border-radius: 6px;
+    overflow: hidden;
+    table-layout: fixed;
+}
+
+.asset-table thead {
+    background-color: #f9fafb;
+}
+
+.asset-table th {
+    padding: 14px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #212b36;
+    border-bottom: 2px solid #e6e8eb;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+td, th {
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100px; /* or whatever width fits best */
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.asset-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e6e8eb;
+    color: #212b36;
+    font-size: 14px;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.asset-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.asset-table tbody tr:hover {
+    background-color: #f5f7fa;
+}
+
+/* No assets message */
+#printable-content p {
+    text-align: center;
+    padding: 24px;
+    color: #637381;
+    font-size: 15px;
+}
+
+/* Modal buttons container */
+#printModal .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e6e8eb;
+}
+
+/* Print and Cancel buttons */
+.print-confirm-btn, .cancel-btn {
+   
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.print-confirm-btn {
+    background-color: #2c7be5;
+    color: white;
+    margin-right: 12px;
+}
+
+.print-confirm-btn:hover {
+    background-color: #1a68d1;
+}
+
+.cancel-btn {
+    background-color: #f1f2f4;
+    color: #212b36;
+}
+
+.cancel-btn:hover {
+    background-color: #e4e7eb;
+}
+
+.print-confirm-btn:active, .cancel-btn:active {
+    transform: translateY(1px);
+}
+
+/* Responsive styles */
+@media screen and (max-width: 767px) {
+    #printModal .modal-content {
+        padding: 16px;
+        max-width: 95%;
+    }
+    
+    .asset-table th, .asset-table td {
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+    
+    .asset-table th {
+        font-size: 12px;
+    }
+    
+    #printModal .modal-content h2 {
+        font-size: 18px;
+        padding-bottom: 12px;
+    }
+    
+    .print-confirm-btn, .cancel-btn {
+        padding: 8px 14px;
+    }
+}
+
+/* Print-specific styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    #printable-content, #printable-content * {
+        visibility: visible;
+    }
+    
+    #printable-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    
+    #printModal .modal-buttons, #printModal .close-btn {
+        display: none;
+    }
+    
+    .asset-table {
+        border: 1px solid #e6e8eb;
+        box-shadow: none;
+    }
+    
+    .asset-table th {
+        background-color: #f9fafb !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* CSS for vendor selection in edit modal */
+.vendor-section {
+    grid-column: span 2;
+}
+
+.current-vendor-info {
+    background-color: #f7f7f7;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.change-vendor-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.change-vendor-btn:hover {
+    background-color: #45a049;
+}
+
+.vendor-selection-container {
+    margin-top: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+}
+
+.search-box {
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.vendors-table-container {
+    overflow-x: auto;
+}
+
+.vendor-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vendor-table th, .vendor-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.vendor-table th {
+    background-color: #f0f0f0;
+    position: sticky;
+    top: 42px; /* Height of search box */
+    z-index: 5;
+}
+
+.vendor-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.select-vendor-btn {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    margin: 2px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.select-vendor-btn:hover {
+    background-color: #0b7dda;
+}
+
+.category-badge {
+    display: inline-block;
+    background-color: #e0e0e0;
+    padding: 3px 8px;
+    margin: 2px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.loading-message, .error-message {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.error-message {
+    color: #f44336;
+}
+
+.no-categories {
+    color: #999;
+    font-style: italic;
+}
+
+.vendor-change-notification {
+    position: absolute;
+    bottom: -40px;
+    left: 0;
+    right: 0;
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px;
+    text-align: center;
+    border-radius: 4px;
+    z-index: 100;
+    animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+}.alert-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 0.2rem 0.5rem;
+    background-color: #ef4444; /* Red background */
+    color: white; /* White text */
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 9999px; /* Fully rounded corners */
+    line-height: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}/* Category Modal Style Overlaying the Edit Modal */
+.category-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000; /* ABOVE edit-modal (which is 1000) */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal Content Styling */
+.category-modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    animation: fadeInModal 0.3s ease;
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.category-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.category-modal-close {
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #999;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+.category-modal-close:hover {
+    color: #e11d48;
+}
+
+.category-search {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.category-search input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.category-search button {
+    background-color: #1e40af;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.category-search button:hover {
+    background-color: #1c3aa9;
+}
+
+.category-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.category-table th, .category-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+}
+.category-table th {
+    background-color: #f8fafc;
+    color: #1e40af;
+}
+.select-category-btn {
+    padding: 0.25rem 0.75rem;
+    background-color: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+.select-category-btn:hover {
+    background-color: #16a34a;
+}
+
+                
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="/media/assets/images/logo.svg" alt="Logo" style="width: 24px; height: 24px;">
+                <span>Asset Manager</span>
+              </div>
+              
+            <a href="{% url 'dashboard' %}" class="menu-item">
+                <div>Dashboard</div>
+            </a>
+            <a href="{% url 'Asset Inventory' %}" class="menu-item active">
+                <div>Asset Inventory</div>
+            </a>
+            <a href="{% url 'Add Asset' %}" class="menu-item">
+                <div>Add Asset</div>
+            </a>
+            <a href="{% url 'Alerts' %}" class="menu-item {% if request.resolver_match.url_name == 'Alerts' %}active{% endif %}">
+                <div>
+                    Alerts
+                    <!-- New Alert Badge -->
+                    {% if total_new_alerts > 0 %}
+                        <span class="alert-badge">{{ total_new_alerts }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            <a href="{% url 'MaintenancePage' %}" class="menu-item ">
+                <div>Maintenance</div>
+            </a>
+            <a href="{% url 'asset_request_tracking' %}" class="menu-item ">
+                <div>Asset Requests</div>
+            </a>
+            <a href="{% url 'Reports' %}" class="menu-item">
+                <div>Reports</div>
+            </a>
+            <a href="{% url 'user_management' %}" class="menu-item ">
+                <div>Users</div>
+            </a>
+        </div>
+       
+        <div class="main-content">
+            <div class="header">
+                <h1>Asset Inventory</h1>
+                <div class="user-info" onclick="openLogoutModal()">
+                    <span class="user-name">{{ user.username }}</span>
+                    <div class="user-avatar">
+                        {{ user.email.0|upper }}{{ user.email.1|lower }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="print-btn" onclick="openPrintModal()">Print Today's Assets</button>
+            </div>
+    
+            
+           <!-- Logout Pop-up Modal -->
+            <div id="logoutModal" class="logout-modal" style="display: none;">
+                <div class="logout-modal-content">
+                    <p>Are you sure you want to logout?</p>
+                    <div class="logout-modal-buttons">
+                        <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                        <button onclick="closeLogoutModal()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            
+            
+            <div class="inventory-controls" style="max-width: 100%;auto; overflow-x: auto;">
+                <input type="text" placeholder="Search assets..." class="search-box" id='searchBox'>
+                <select class="filter-select" id="typeFilter">
+                    <option value="all">All Types</option>
+                    {% for type in asset_types %}
+                        <option value="{{ type }}">{{ type }}</option>
+                    {% endfor %}
+                </select>
+                <select class="filter-select" id="categoryFilter">
+                    <option value="all">All Categories</option>
+                    {% for category in asset_categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+        
+                <select class="filter-select" id="Availability-Filter">
+                    <option value="all" >All Status</option>
+                    <option>In Use</option>
+                    <option>Available</option>
+                </select>
+                <div class="column-selector">
+                   
+                    <button class="btn btn-primary" onclick="openModal()">Select Columns</button>
+
+                <!-- Modal Structure -->
+                    <div id="columnModal" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick="closeModal()">&times;</span>
+                            <h3>Select Columns</h3>
+                            <div class="column-list">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-id" checked onchange="toggleColumn('AssetID')">
+                            <label for="col-asset-id">Asset ID</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-name" checked onchange="toggleColumn('AssetName')">
+                            <label for="col-asset-name">Asset Name</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-category" checked onchange="toggleColumn('Category')">
+                            <label for="col-category">Category</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-number"  onchange="toggleColumn('AssetNumber')">
+                            <label for="col-asset-number">Asset Number</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-bond-number"  onchange="toggleColumn('BondNumber')">
+                            <label for="col-bond-number">Bond Number</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-purchase-order"  onchange="toggleColumn('PurchaseOrder')">
+                            <label for="col-purchase-order">Purchase Order</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-purchase-requisition"  onchange="toggleColumn('PurchaseRequisition')">
+                            <label for="col-purchase-requisition">Purchase Requisition</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-capex"  onchange="toggleColumn('Capex')">
+                            <label for="col-capex">Capex</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-serial-number" onchange="toggleColumn('SerialNumber')">
+                            <label for="col-serial-number">Serial Number</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-part-number"  onchange="toggleColumn('PartNumber')">
+                            <label for="col-part-number">Part Number</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-bond-type"  onchange="toggleColumn('BondType')">
+                            <label for="col-bond-type">Bond Type</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-model"  onchange="toggleColumn('AssetModel')">
+                            <label for="col-asset-model">Asset Model</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-type"  onchange="toggleColumn('AssetType')">
+                            <label for="col-asset-type">Asset Type</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-status"  onchange="toggleColumn('AssetStatus')">
+                            <label for="col-asset-status">Asset Status</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-Availability"  onchange="toggleColumn('AssetAvailability')">
+                            <label for="col-asset-Availability">Availability</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-warehouse"  onchange="toggleColumn('Warehouse')">
+                            <label for="col-warehouse">Warehouse</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-location" onchange="toggleColumn('Location')">
+                            <label for="col-location">Location</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-provider" onchange="toggleColumn('AssetProvider')">
+                            <label for="col-asset-provider">Asset Provider</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-classification" onchange="toggleColumn('AssetClassification')">
+                            <label for="col-asset-classification">Asset Classification</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-purchase-date" onchange="toggleColumn('PurchaseDate')">
+                            <label for="col-purchase-date">Purchase Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-cost"  onchange="toggleColumn('Cost')">
+                            <label for="col-cost">Cost</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-warranty" checked onchange="toggleColumn('Warranty')">
+                            <label for="col-warranty" >Warranty</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-bond-expiry-date"  onchange="toggleColumn('BondExpiryDate')">
+                            <label for="col-bond-expiry-date">Bond Expiry Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-specification"  onchange="toggleColumn('Specification')">
+                            <label for="col-specification">Specification</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-requires-calibration"  onchange="toggleColumn('RequiresCalibration')">
+                            <label for="col-requires-calibration">Requires Calibration</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-last-calibration-date"  onchange="toggleColumn('LastCalibrationDate')">
+                            <label for="col-last-calibration-date">Last Calibration Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-calibration-author"  onchange="toggleColumn('CalibrationAuthor')">
+                            <label for="col-calibration-author">Calibration Author</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-calibration-notes"  onchange="toggleColumn('CalibrationNotes')">
+                            <label for="col-calibration-notes">Calibration Notes</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-calibration-interval"  onchange="toggleColumn('CalibrationInterval')">
+                            <label for="col-calibration-interval">Calibration Interval</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-next-calibration-date"  onchange="toggleColumn('NextCalibrationDate')">
+                            <label for="col-next-calibration-date">Next Calibration Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-document-path"  onchange="toggleColumn('DocumentPath')">
+                            <label for="col-document-path">Document Path</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-upload-date" onchange="toggleColumn('UploadDate')">
+                            <label for="col-upload-date">Upload Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-image-path"  onchange="toggleColumn('ImagePath')">
+                            <label for="col-image-path">Image</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-last-maintenance-date" onchange="toggleColumn('LastMaintenanceDate')">
+                            <label for="col-last-maintenance-date">Last Maintenance Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-maintenance-interval"  onchange="toggleColumn('MaintenanceInterval')">
+                            <label for="col-maintenance-interval">Maintenance Interval</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-maintenance-notes" onchange="toggleColumn('MaintenanceNotes')">
+                            <label for="col-maintenance-notes">Maintenance Notes</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-next-maintenance-date"  onchange="toggleColumn('NextMaintenanceDate')">
+                            <label for="col-next-maintenance-date">Next Maintenance Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-assigned-to" checked onchange="toggleColumn('AssignedTo')">
+                            <label for="col-assigned-to">Assigned To</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-vendor-name" checked onchange="toggleColumn('VendorName')">
+                            <label for="col-vendor-name">Vendor Name</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-idle-days" onchange="toggleColumn('IdleDays')">
+                            <label for="col-idle-days">Idle Days</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-software-version" onchange="toggleColumn('SoftwareVersion')">
+                            <label for="col-software-version">Software Version</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-renew-date" onchange="toggleColumn('RenewDate')">
+                            <label for="col-renew-date">Renew Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-actions" checked onchange="toggleColumn('actions')">
+                            <label for="col-actions">Actions</label>
+                        </div>
+
+                    </div>
+                  </div>
+                </div>
+                <button class="btn btn-primary" type="button" onclick="openExportModal()">Export Assets</button>
+
+            </div>
+            <div class="table-container">
+                <table id="assetTable">
+                    <thead>
+                        <tr>
+                            <th data-column="AssetID">Asset ID</th>
+                            <th data-column="AssetName">Asset Name</th>
+                            <th data-column="Category">Category</th>
+                            <th data-column="AssetNumber">Asset Number</th>
+                            <th data-column="BondNumber">Bond Number</th>
+                            <th data-column="PurchaseOrder">Purchase Order</th>
+                            <th data-column="PurchaseRequisition">Purchase Requisition</th>
+                            <th data-column="Capex">Capex</th>
+                            <th data-column="SerialNumber">Serial Number</th>
+                            <th data-column="PartNumber">Part Number</th>
+                            <th data-column="BondType">Bond Type</th>
+                            <th data-column="AssetModel">Asset Model</th>
+                            <th data-column="AssetType">Asset Type</th>
+                            <th data-column="AssetStatus">Asset Status</th>
+                            <th data-column="AssetAvailability">Availability</th>
+                            <th data-column="Warehouse">Warehouse</th>
+                            <th data-column="Location">Location</th>
+                            <th data-column="AssetProvider">Asset Provider</th>
+                            <th data-column="AssetClassification">Asset Classification</th>
+                            <th data-column="PurchaseDate">Purchase Date</th>
+                            <th data-column="Cost">Cost</th>
+                            <th data-column="Warranty" >Warranty</th>
+                            <th data-column="BondExpiryDate">Bond Expiry Date</th>
+                            <th data-column="Specification">Specification</th>
+                            <th data-column="RequiresCalibration">Requires Calibration</th>
+                            <th data-column="LastCalibrationDate">Last Calibration Date</th>
+                            <th data-column="CalibrationAuthor">Calibration Author</th>
+                            <th data-column="CalibrationNotes">Calibration Notes</th>
+                            <th data-column="CalibrationInterval">Calibration Interval</th>
+                            <th data-column="NextCalibrationDate">Next Calibration Date</th>
+                            <th data-column="DocumentPath">Document Path</th>
+                            <th data-column="UploadDate">Upload Date</th>
+                            <th data-column="ImagePath">Image </th>
+                            <th data-column="LastMaintenanceDate">Last Maintenance Date</th>
+                            <th data-column="MaintenanceInterval">Maintenance Interval</th>
+                            <th data-column="MaintenanceNotes">Maintenance Notes</th>
+                            <th data-column="NextMaintenanceDate">Next Maintenance Date</th>
+                            <th data-column="AssignedTo">Assigned To</th>
+                            <th data-column="VendorName">Vendor Name</th>
+                            <th data-column="SoftwareVersion">Software Version</th>
+                            <th data-column="RenewDate">Renew Date</th>
+                            <th data-column="IdleDays">Idle Days</th>
+                            <th data-column="actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assets in assets %}
+                        <tr>
+                            <td data-column="AssetID">{{assets.AssetID}}</td>
+                            <td data-column="AssetName">{{assets.AssetName}}</td>
+                            <td data-column="Category">{{assets.Category}}</td>
+                            <td data-column="AssetNumber">{{assets.AssetNumber}}</td>
+                            <td data-column="BondNumber">{{assets.BondNumber}}</td>
+                            <td data-column="PurchaseOrder">{{ assets.PurchaseOrder|default:"—" }}</td>
+                            <td data-column="PurchaseRequisition">{{ assets.PurchaseRequisition|default:"—" }}</td>
+                            <td data-column="Capex">{{ assets.Capex|default:"—" }}</td>
+                            <td data-column="SerialNumber">{{assets.SerialNumber}}</td>
+                            <td data-column="PartNumber">{{assets.PartNumber}}</td>
+                            <td data-column="BondType">{{assets.AssetBondType}}</td>
+                            <td data-column="AssetModel">{{ assets.AssetModel }}</td>
+                            <td data-column="AssetType">{{assets.AssetType}}</td>
+                            <td data-column="AssetStatus">{{assets.AssetStatus}}</td>
+                            <td data-column="Warehouse">{{assets.Warehouse}}</td>
+                            <td data-column="Location">{{assets.Location}}</td>
+                            <td data-column="AssetProvider">{{assets.AssetProvider}}</td>
+                            <td data-column="AssetClassification">{{assets.AssetClassification}}</td>
+                            <td data-column="AssetAvailability">
+                                <span class="availability {% if assets.AssetAvailability == 'Available' %}available{% else %}in-use{% endif %}">
+                                  {{ assets.AssetAvailability }}
+                                </span>
+                              </td>
+                            <td data-column="PurchaseDate">{{assets.PurchaseDate}}</td>
+                            <td data-column="Cost"> ₹ {{assets.Cost}}</td>
+                            
+                            <td data-column="Warranty" class="warranty-expired">{{assets.Warranty}} Years</td>
+                            <td data-column="BondExpiryDate">{{assets.BondExpiryDate}}</td>
+                            <td data-column="Specification">{{assets.Specification}}</td>
+                            <td data-column="RequiresCalibration">{{assets.RequiresCalibration}}</td>
+                            <td data-column="LastCalibrationDate">{{assets.CalibrationID.LastCalibrationDate}}</td>
+                            <td data-column="CalibrationAuthor">{{assets.CalibrationID.CalibrationAuthority}}</td>
+                            <td data-column="CalibrationNotes">{{assets.CalibrationID.CalibrationNotes}}</td>
+                            <td data-column="CalibrationInterval">{{assets.CalibrationID.CalibrationInterval}}</td>
+                            <td data-column="NextCalibrationDate">{{assets.CalibrationID.NextCalibrationDate}}</td>
+                            <td data-column="DocumentPath" class="center-cell">
+                                {% if assets.DocumentID.DocumentPath %}
+                                    <a class="btn-download" href="{% url 'download_document' assets.DocumentID.DocumentPath %}">↓</a>
+                                {% else %}
+                                    No Document Available
+                                {% endif %}
+                            </td>
+                            <td data-column="UploadDate">{{assets.DocumentID.UploadDate}}</td>
+                            <td data-column="ImagePath">
+                                {% if assets.ImageID and assets.ImageID.ImagePath %}
+                                    <!-- Add debug output to verify the path -->
+                                    <!-- {{ assets.ImageID.ImagePath }} -->
+                                    <img src="/media/{{ assets.ImageID.ImagePath }}" 
+                                         alt="Asset Image" 
+                                         class="asset-image"
+                                         onclick="showModal('/media/{{ assets.ImageID.ImagePath }}')"
+                                         style="cursor: pointer;">
+                                {% else %}
+                                    <img src="/media/assets/images/default.jpg" 
+                                         alt="Default Asset Image" 
+                                         class="asset-image"
+                                         onclick="showModal('/media/assets/images/default.jpg')"
+                                         style="cursor: pointer;">
+                                {% endif %}
+                            </td>
+                            
+                            <td data-column="LastMaintenanceDate">{{assets.MaintenanceID.LastMaintenanceDate}}</td>
+                            <td data-column="MaintenanceInterval">{{assets.MaintenanceID.MaintenanceInterval}}</td>
+                            <td data-column="MaintenanceNotes">{{assets.MaintenanceID.MaintenanceNotes}}</td>
+                            <td data-column="NextMaintenanceDate">{{assets.MaintenanceID.NextMaintenanceDate}}</td>
+                            <td data-column="AssignedTo" class="assigned-to">
+                                {% if assets.requests %}
+                                <div class="assignment-container">
+                                    
+                                    <div class="user-icon" onclick="showRequests({{ assets.AssetID }})">
+                                        <i class="fa fa-user" aria-hidden="true"></i>
+                                        {% if assets.requests|length > 0 %}
+                                            <span class="request-count">{{ assets.requests|length|add:"0" }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Modal for showing all requests -->
+                                <div id="requestModal_{{ assets.AssetID }}" class="request-modal">
+                                    <div class="request-modal-content">
+                                        <span class="close-modal" onclick="closeRequests({{ assets.AssetID }})">&times;</span>
+                                        <h3>Asset Requests - {{ assets.AssetName }}</h3>
+                                        <div class="request-list" style="max-height: 300px; overflow-y: auto;">
+                                            {% for request in assets.requests %}
+                                                <div class="request-item {% if request.status == 'Completed' %}completed{% else %}pending{% endif %}">
+                                                    <div class="request-user">{{ request.user_name }}</div>
+                                                    <div class="request-dates">
+                                                        {{ request.start_date|date:"d M Y" }} - {{ request.end_date|date:"d M Y" }}
+                                                    </div>
+                                                    <div class="request-status">{{ request.status }}</div>
+                                                    <div class="request-purpose">{{ request.purpose }}</span></div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                    <span class="not-assigned">Not Assigned</span>
+                                {% endif %}                                
+                            </td>
+                            <td data-column="VendorName">
+                                <a href="#" 
+                                   class="vendor-link" 
+                                   data-vendor-name="{{assets.VendorID.VendorName}}" 
+                                   data-vendor-contact="{{assets.VendorID.VendorContact}}" 
+                                   data-vendor-notes="{{assets.VendorID.VendorNotes}}" 
+                                   data-vendor-bgsw-id="{{assets.VendorID.BgswVendorId}}" 
+                                   style="text-decoration: none; font-weight: bold; color :#2171b5; ">
+                                    {{assets.VendorID.VendorName}}
+                                </a>
+                            </td>
+                            
+                            <td data-column="SoftwareVersion">  {{assets.SoftwareVersion}}</td>
+                            <td data-column="RenewDate">  {{assets.RenewDate}}</td>
+                            <td data-column="IdleDays">  {{assets.idle_days}}</td>
+                            <td data-column="actions" class="action-buttons"> 
+                                <button class="btn-action edit" onclick="openEditModal('{{assets.AssetID}}')">✎</button>
+                                <div id="editAssetModal_{{ assets.AssetID }}" class="edit-modal">
+                                    <div class="edit-modal-content">
+                                        <div class="edit-modal-header">
+                                            <h2>Edit Asset</h2>
+                                            <button class="edit-modal-close" onclick="closeEditModal('{{assets.AssetID}}')">&times;</button>
+                                        </div>
+                                        
+                                        <form id="editAssetForm_{{ assets.AssetID }}" action="{% url 'update_asset' assets.AssetID %}" method="POST" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <div class="edit-form-grid">
+                                                {% csrf_token %}
+                                            
+                                                <!-- Common Fields -->
+                                                <div class="edit-form-group">
+                                                    <label for="editAssetName_{{ assets.AssetID }}">Asset Name</label>
+                                                    <input type="text" id="editAssetName_{{ assets.AssetID }}" name="assetName" required value="{{ assets.AssetName }}">
+                                                </div>
+                                                <div class="edit-form-group">
+                                                    <label for="editBondType_{{ assets.AssetID }}">Bond Type</label>
+                                                    <select id="editBondType_{{ assets.AssetID }}" name="bondType">
+                                                        <option value="Bonded" {% if assets.AssetBondType == "Bonded" %}selected{% endif %}>Bonded</option>
+                                                        <option value="Non Bonded" {% if assets.AssetBondType == "Non Bonded" %}selected{% endif %}>Non Bonded</option>
+                                                    </select>
+                                                </div>
+                                            
+                                                <div class="edit-form-group">
+                                                    <label for="editPurchaseDate_{{ assets.AssetID }}">Purchase Date</label>
+                                                    <input type="date" id="editPurchaseDate_{{ assets.AssetID }}" name="purchaseDate" value="{{ assets.PurchaseDate|date:'Y-m-d' }}">
+                                                </div>
+                                            
+                                                <div class="edit-form-group">
+                                                    <label for="editCost_{{ assets.AssetID }}">Cost</label>
+                                                    <input type="number" id="editCost_{{ assets.AssetID }}" name="cost" min="0" step="0.01" value="{{ assets.Cost }}">
+                                                </div>
+                                            
+                                                {% if assets.AssetType == 'Software' %}
+                                                    <!-- Software Specific "Category" Dropdown (Shows License Types) -->
+                                                    <div class="edit-form-group">
+                                                        <label for="editCategory_Software_{{ assets.AssetID }}">Category (License Type)</label>
+                                                        <select id="editCategory_Software_{{ assets.AssetID }}" name="category">
+                                            
+                                                            <option value="Shared License" {% if assets.SoftwareLicenseType == "Shared License" %}selected{% endif %}>Shared License</option>
+                                                            <option value="PC Based License" {% if assets.SoftwareLicenseType == "PC Based License" %}selected{% endif %}>PC Based License</option>
+                                                            <option value="User Based License" {% if assets.SoftwareLicenseType == "User Based License" %}selected{% endif %}>User Based License</option>
+                                                            <option value="Location Based License" {% if assets.SoftwareLicenseType == "Location Based License" %}selected{% endif %}>Location Based License</option>
+                                                            <!-- Add other options from SOFTWARE_LICENSE_TYPES if needed -->
+                                                        </select>
+                                                    
+                                                    </div>
+                                                    <!-- Other Software Fields -->
+                                                    <div class="edit-form-group">
+                                                        <label for="editSoftwareVersion_{{ assets.AssetID }}">Software Version</label>
+                                                        <input  type="text" id="editSoftwareVersion_{{ assets.AssetID }}" name="SoftwareVersion" value="{{ assets.SoftwareVersion}}">
+                                                    </div>
+                                                    <!-- Other Software Fields -->
+                                                    <div class="edit-form-group">
+                                                        <label for="editRenewalDate_{{ assets.AssetID }}">Renewal Date</label>
+                                                        <input type="date" id="editRenewalDate_{{ assets.AssetID }}" name="renewDate" value="{{ assets.RenewDate|date:'Y-m-d' }}">                                                    </div>
+
+                                                    <div class="edit-form-group">
+                                                        <label for="editAssetProvider_{{ assets.AssetID }}">Asset Provider/Vendor</label>
+                                                        <select id="editAssetProvider_{{ assets.AssetID }}" name="assetProvider">
+                                                            <option value="BGSW" {% if assets.AssetProvider == "BGSW" %}selected{% endif %}>BGSW</option>
+                                                            <option value="CSI-Borrowed" {% if assets.AssetProvider == "CSI-Borrowed" %}selected{% endif %}>CSI-Borrowed</option>
+                                                            <option value="CSI-Purchased" {% if assets.AssetProvider == "CSI-Purchased" %}selected{% endif %}>CSI-Purchased</option>
+                                                        </select>
+                                                    </div>
+
+                                            
+                                                {% else %}
+                                                    <!-- Hardware (and other) Specific Fields -->
+                                                    <div class="edit-form-group">
+                                                        <label for="selectedCategoryDisplay_{{ assets.AssetID }}">Category</label>
+                                                        <div style="display: flex; gap: 10px; align-items: center;">
+                                                            <!-- Readonly input to show the selected name -->
+                                                            <input type="text" id="selectedCategoryDisplay_{{ assets.AssetID }}" class="form-control" placeholder="Select Category" readonly
+                                                                   value="{{ assets.cid.Name | default:'' }}"> <!-- Display name from ForeignKey -->
+                                                    
+                                                            <!-- *** CHANGE: name="cid" to submit the ID *** -->
+                                                            <!-- *** CHANGE: value gets CategoryID from ForeignKey *** -->
+                                                            <input type="hidden" id="selectedCategory_{{ assets.AssetID }}" name="cid"
+                                                                   value="{{ assets.cid.CategoryID | default:'' }}">
+                                                    
+                                                            <button type="button" class="btn btn-primary" onclick="openCategoryModal('{{ assets.AssetID }}')">Select Category</button>
+                                                        </div>
+                                                    </div>
+                                                      
+                                                      <div class="category-modal" id="category_modal">
+                                                        <div class="category-modal-content">
+                                                            <div class="category-modal-header">
+                                                                <h3>Select Category</h3>
+                                                                <span class="category-modal-close" onclick="document.getElementById('category_modal').style.display='none'">&times;</span>
+                                                            </div>
+                                                            <table class="category-table">
+                                                                <thead>
+                                                                    <tr><th>Name</th><th>Action</th></tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for category in categories %}
+                                                                    <tr>
+                                                                        <td>{{ category.Name }}</td>
+                                                                        <td>
+                                                                            <!-- Inside the category modal table -->
+                                                                                <button class="select-category-btn"
+                                                                                type="button" 
+                                                                                data-category-id="{{ category.CategoryID }}"
+                                                                                data-category-name="{{ category.Name }}"
+                                                                                onclick="selectCategory(this)">
+                                                                                Select
+                                                                                </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    
+                                                    
+                                                    <div class="edit-form-group">
+                                                        <label for="editAssetModal">Asset Modal</label>
+                                                        <input type="text" id="editAssetModal" name="AssetModel" required value="{{assets.AssetModel}}">
+                                                    </div>
+                                                    <div class="edit-form-group">
+                                                        <label for="editAssetNumber_{{ assets.AssetID }}">Asset Number</label>
+                                                        <input type="text" id="editAssetNumber_{{ assets.AssetID }}" name="assetNumber"  required value="{{ assets.AssetNumber }}">
+                                                    </div>
+
+                                                    <div class="edit-form-group">
+                                                        <label for="editBondNumber_{{ assets.AssetID }}">Bond Number</label>
+                                                        <input type="text" id="editBondNumber_{{ assets.AssetID }}" name="bondNumber" value="{{ assets.BondNumber }}">
+                                                    </div>
+
+                                                    <div class="edit-form-group">
+                                                        <label for="editPurchaseOrder_{{ assets.AssetID }}">Purchase Order</label>
+                                                        <input type="text" id="editPurchaseOrder_{{ assets.AssetID }}" name="purchaseOrder" value="{{ assets.PurchaseOrder }}">
+                                                    </div>
+
+                                                    <div class="edit-form-group">
+                                                        <label for="editPurchaseRequisition_{{ assets.AssetID }}">Purchase Requisition</label>
+                                                        <input type="text" id="editPurchaseRequisition_{{ assets.AssetID }}" name="purchaseRequisition" value="{{ assets.PurchaseRequisition }}">
+                                                    </div>
+
+                                                    <div class="edit-form-group">
+                                                        <label for="editCapex_{{ assets.AssetID }}">Capex</label>
+                                                        <input type="text" id="editCapex_{{ assets.AssetID }}" name="capex" value="{{ assets.Capex }}">
+                                                    </div>
+                                            
+                                                    <div class="edit-form-group">
+                                                        <label for="editSerialNumber_{{ assets.AssetID }}">Serial Number</label>
+                                                        <input type="text" id="editSerialNumber_{{ assets.AssetID }}" name="serialNumber" value="{{ assets.SerialNumber }}">
+                                                    </div>
+                                            
+                                                    <div class="edit-form-group">
+                                                        <label for="editPartNumber_{{ assets.AssetID }}">Part Number</label>
+                                                        <input type="text" id="editPartNumber_{{ assets.AssetID }}" name="partNumber" value="{{ assets.PartNumber }}">
+                                                    </div>
+                                            
+                                                    <div class="edit-form-group">
+                                                        <label for="editAssetType_{{ assets.AssetID }}">Asset Type</label>
+                                                        <input type="text" id="editAssetType_{{ assets.AssetID }}" name="assetType" value="{{ assets.AssetType }}">
+                                                    </div>
+                                            
+                                                    <div class="edit-form-group">
+                                                        <label for="editAssetStatus_{{ assets.AssetID }}">Asset Status</label>
+                                                        <select id="editAssetStatus_{{ assets.AssetID }}" name="assetStatus">
+                                                            <option value="Working" {% if assets.AssetStatus == "Working" %}selected{% endif %}>Working</option>
+                                                            <option value="Under Maintenance" {% if assets.AssetStatus == "Under Maintenance" %}selected{% endif %}>Under Maintenance</option>
+                                                            <option value="Not Working" {% if assets.AssetStatus == "Not Working" %}selected{% endif %}>Not Working</option>
+                                                             <!-- Add other relevant statuses for hardware -->
+                                                        </select>
+                                                    </div>
+                                            
+                                                    <div class="edit-form-group">
+                                                        <label for="editWarehouse_{{ assets.AssetID }}">Warehouse</label>
+                                                        <input type="text" id="editWarehouse_{{ assets.AssetID }}" name="warehouse" value="{{ assets.Warehouse }}">
+                                                    </div>
+                                            
+                                                    <div class="edit-form-group">
+                                                        <label for="editLocation_{{ assets.AssetID }}">Location</label>
+                                                        <input type="text" id="editLocation_{{ assets.AssetID }}" name="location" value="{{ assets.Location }}">
+                                                    </div>
+                                            
+                                                    <div class="edit-form-group">
+                                                        <label for="editWarranty_{{ assets.AssetID }}">Warranty (Years)</label>
+                                                        <input type="number" id="editWarranty_{{ assets.AssetID }}" name="warranty" min="0" value="{{ assets.Warranty }}">
+                                                    </div>
+                                            
+                                                    <div class="edit-form-group">
+                                                        <label for="editSpecification_{{ assets.AssetID }}">Specification</label>
+                                                        <textarea id="editSpecification_{{ assets.AssetID }}" name="specification" rows="3">{{ assets.Specification }}</textarea>
+                                                    </div>
+                                            
+                                                    <!-- Vendor Selection for Hardware -->
+                                                    <div class="edit-form-group vendor-section">
+                                                         <label>Vendor Information</label>
+                                                         <div class="current-vendor-info">
+                                                             <p>Current Vendor: <strong>{{ assets.VendorID.VendorName | default:"N/A" }}</strong></p>
+                                                             <p>Contact: {{ assets.VendorID.VendorContact | default:"N/A" }}</p>
+                                                             <input type="hidden" id="editVendorID_{{assets.AssetID}}" name="vendorID" value="{{ assets.VendorID.VendorId | default:'' }}">
+                                                             <button type="button" class="change-vendor-btn" onclick="loadVendorsForEdit('{{assets.AssetID}}')">Change Vendor</button>
+                                                         </div>
+                                                         <div id="vendorSelectionContainer_{{assets.AssetID}}" class="vendor-selection-container" style="display: none;">
+                                                             <div class="search-box">
+                                                                 <input type="text" id="vendorSearchInput_{{assets.AssetID}}" placeholder="Search vendors..." onkeyup="searchVendors('{{assets.AssetID}}')">
+                                                             </div>
+                                                             <div id="vendors-table-container_{{assets.AssetID}}" class="vendors-table-container">
+                                                                 <table class="vendor-table">
+                                                                     <thead>
+                                                                         <tr>
+                                                                             <th>BGSW Vendor ID</th>
+                                                                             <th>Vendor Name</th>
+                                                                             <th>Vendor Contact</th>
+                                                                             <th>Categories Used</th>
+                                                                             <th>Actions</th>
+                                                                         </tr>
+                                                                     </thead>
+                                                                     <tbody id="vendors-table-body_{{assets.AssetID}}">
+                                                                         <!-- Vendors will be loaded here dynamically -->
+                                                                         <tr>
+                                                                             <td colspan="5" class="loading-message">Loading vendors...</td>
+                                                                         </tr>
+                                                                     </tbody>
+                                                                 </table>
+                                                             </div>
+                                                         </div>
+                                                    </div>
+                                            
+                                                    <!-- Image Upload for Hardware -->
+                                                    <div class="edit-form-group">
+                                                        <label for="editImage_{{ assets.AssetID }}">Asset Image</label>
+                                                        <input type="file" id="editImage_{{ assets.AssetID }}" name="assetImage" accept="image/*">
+                                                        {% if assets.ImageID and assets.ImageID.ImagePath %}
+                                                            <div class="current-image">
+                                                                <p>Current: {{ assets.ImageID.ImageName }}</p>
+                                                                <img src="/media/{{ assets.ImageID.ImagePath }}" alt="{{ assets.AssetName }}">
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                            
+                                                    <!-- Document Upload for Hardware -->
+                                                    <div class="edit-form-group">
+                                                        <label for="editDocument_{{ assets.AssetID }}">Asset Document</label>
+                                                        <input type="file" id="editDocument_{{ assets.AssetID }}" name="assetDocument" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt">
+                                                        {% if assets.DocumentID and assets.DocumentID.DocumentPath %}
+                                                            <div class="current-document">
+                                                                <p>Current: {{ assets.DocumentID.DocumentName }}</p>
+                                                                <a href="/media/{{ assets.DocumentID.DocumentPath }}" target="_blank" class="document-link">View Document</a>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                            
+                                                    <!-- Maintenance Fields for Hardware -->
+                                                    <div class="edit-form-group">
+                                                        <label for="editLastMaintenanceDate_{{ assets.AssetID }}">Last Maintenance Date</label>
+                                                        <input type="date" id="editLastMaintenanceDate_{{ assets.AssetID }}" name="lastMaintenanceDate" value="{{ assets.MaintenanceID.LastMaintenanceDate|date:'Y-m-d' }}">
+                                                    </div>
+                                            
+                                                    <div class="edit-form-group">
+                                                        <label for="editMaintenanceInterval_{{ assets.AssetID }}">Maintenance Interval (Months)</label>
+                                                        <input type="number" id="editMaintenanceInterval_{{ assets.AssetID }}" name="maintenanceInterval" min="1" value="{{ assets.MaintenanceID.MaintenanceInterval }}">
+                                                    </div>
+                                            
+                                                    <!-- Calibration Fields for Hardware (only if applicable) -->
+                                                    {% if assets.RequiresCalibration %}
+                                                        <div id="editCalibrationFields_{{ assets.AssetID }}" class="edit-calibration-fields" style="grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; padding-top: 1rem; margin-top: 1rem; border-top: 1px solid #e5e7eb;">
+                                                             <h4>Calibration Details</h4>
+                                                             <div class="edit-form-group">
+                                                                 <label for="editCalibrationAuthority_{{ assets.AssetID }}">Calibration Authority</label>
+                                                                 <input type="text" id="editCalibrationAuthority_{{ assets.AssetID }}" name="calibrationAuthority" value="{{ assets.CalibrationID.CalibrationAuthority }}">
+                                                             </div>
+                                                             <div class="edit-form-group">
+                                                                 <label for="editLastCalibrationDate_{{ assets.AssetID }}">Last Calibration Date</label>
+                                                                 <input type="date" id="editLastCalibrationDate_{{ assets.AssetID }}" name="lastCalibrationDate" value="{{ assets.CalibrationID.LastCalibrationDate|date:'Y-m-d' }}">
+                                                             </div>
+                                                             <div class="edit-form-group">
+                                                                 <label for="editCalibrationInterval_{{ assets.AssetID }}">Calibration Interval (Months)</label>
+                                                                 <input type="number" id="editCalibrationInterval_{{ assets.AssetID }}" name="calibrationInterval" min="1" value="{{ assets.CalibrationID.CalibrationInterval }}">
+                                                             </div>
+                                                             <div class="edit-form-group">
+                                                                 <label for="editCalibrationNotes_{{ assets.AssetID }}">Calibration Notes</label>
+                                                                 <textarea id="editCalibrationNotes_{{ assets.AssetID }}" name="calibrationNotes" rows="2">{{ assets.CalibrationID.CalibrationNotes }}</textarea>
+                                                             </div>
+                                                        </div>
+                                                    {% endif %}
+                                            
+                                                {% endif %} <!-- End of Hardware/Software Conditional -->
+                                            
+                                                <!-- Common Action Buttons -->
+                                                <div class="form-actions">
+                                                    <button type="button" class="submit-btn" onclick="closeEditModal('{{assets.AssetID}}')">Cancel</button>
+                                                    <button type="submit" class="submit-btn">Update Asset</button>
+                                                </div>
+                                            
+                                            </div> 
+                                        </form>
+                                    </div>
+                                </div>
+                                <button class="btn-action notify" onclick="openEmailModal('{{ assets.AssetID }}')">🔔</button>
+                                    <!-- Background overlay -->
+                                <div id="emailOverlay" class="modal-overlay"></div>
+
+                                <!-- Email Modal -->
+                                <div id="emailModal" class="modal email-modal" role="dialog" aria-modal="true" aria-labelledby="emailModalTitle" style="display: none;">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h3 class="modal-title" id="emailModalTitle">Send Email Notification</h3>
+                                                <button type="button" class="modal-close-btn" aria-label="Close" onclick="closeEmailModal()">
+                                                    <span aria-hidden="true">×</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <!-- Form elements go here -->
+                                                <div class="form-group">
+                                                    <label for="recipientType">Select Recipient:</label>
+                                                    <select id="recipientType" class="form-control" onchange="loadTemplate()">
+                                                        <option value="user">User</option>
+                                                        <option value="vendor">Vendor</option>
+                                                        <option value="calibration">Calibration Authority</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="emailContent">Email Content:</label>
+                                                    <textarea id="emailContent" class="form-control" rows="6" placeholder="[Insert your message here] Thank you, Asset Management Team"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <!-- Pass asset ID to sendEmail -->
+                                                <button type="button" class="btn btn-primary modal-send-btn" onclick="sendEmail()">Send</button>
+                                                <button type="button" class="btn btn-secondary modal-cancel-btn" onclick="closeEmailModal()">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% csrf_token %}
+                                <button class="btn-action red-btn" onclick="delete_Asset({{assets.AssetID}})" >
+                                    🗑️
+                                </button>
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    
+
+    <div id="imageModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <span class="custom-modal-close" onclick="hideModal()">&times;</span>
+            <img id="modalImage" src="" alt="Image Preview" style="max-width: 100%; height: auto;">
+        </div>
+    </div>
+    <div id="docModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe id="docViewer" src="" width="100%" height="500px"></iframe>
+        </div>
+    </div>
+    <div id="vendorInfoModal" class="vendor-modal">
+        <div class="vendor-modal-content">
+            <span class="vendor-close-button">&times;</span>
+            <div class="vendor-modal-header">
+                <h2>Vendor Information</h2>
+            </div>
+            <div class="vendor-modal-body">
+                <p><strong>Vendor Name:</strong> <span id="vendorModalName"></span></p>
+                <p><strong>BGSW Vendor Id:</strong> <span id="vendorModalBgswVendorId"></span></p>
+                <p><strong>Vendor Contact:</strong> <span id="vendorModalContact"></span></p>
+                <p><strong>More Info:</strong> <span id="vendorModalNotes"></span></p>
+
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Export Modal -->
+    <!-- Export Modal -->
+    <form id="exportForm" method="POST" action="{% url 'export_assets' %}">
+        {% csrf_token %}
+        <div id="exportModal" class="modal">
+            <div class="modal-content" style="overflow-y: auto;">
+                <div class="modal-header">
+                    <h2>Export Assets</h2>
+                </div>
+                <div class="export-filters">
+                    <!-- Asset Types Section -->
+                    <div class="filter-section">
+                        <h3>Asset Types</h3>
+                        <div class="checkbox-grid">
+                            {% for category in asset_categories %}
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="AssetType" value="{{ category }}"> {{ category }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+    
+                    <!-- Fields to Export Section -->
+                    <div class="filter-section">
+                        <h3>Fields to Export</h3>
+                        <div class="checkbox-grid">
+                            {% for field, label in fields_with_labels %}
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="fields" value="{{ field }}"> {{ label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+    
+                    <!-- Export Format Section -->
+                    <input type="hidden" name="export_format" value="csv">
+                </div>
+                <div class="export-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeExportModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Export</button>
+                </div>
+            </div>
+        </div>
+    </form>
+        <!-- Print Modal -->
+        <div id="printModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close-btn" onclick="closePrintModal()">&times;</span>
+                <h2>Assets Added Today ({{ today_date|date:"F d, Y" }})</h2>
+               
+                <div id="printable-content">
+                    {% if today_assets %}
+                        <table class="asset-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">Asset ID</th>
+                                <th style="width: 15%;">Asset Number</th>
+                                <th style="width: 20%;">Asset Name</th>
+                                <th style="width: 15%;">Category</th>
+                                <th style="width: 10%;">Status</th>
+                                <th style="width: 15%;">Location</th>
+                                <th style="width: 15%;">Serial Number</th> <!-- New -->
+                                <th style="width: 15%;">AssetModel Number</th>  <!-- New -->
+                                <th style="width: 15%;">Part Number</th>   <!-- New -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for asset in today_assets %}
+                                <tr>
+                                    <td>{{ asset.AssetID }}</td>
+                                    <td>{{ asset.AssetNumber }}</td>
+                                    <td>{{ asset.BondNumber }}</td>
+                                    <td>{{ asset.PurchaseOrder }}</td>
+                                    <td>{{ asset.PurchaseRequisition }}</td>
+                                    <td>{{ asset.Capex }}</td>
+                                    <td>{{ asset.AssetName }}</td>
+                                    <td>{{ asset.Category }}</td>
+                                    <td>{{ asset.AssetStatus }}</td>
+                                    <td>{{ asset.Location }}</td>
+                                    <td>{{ asset.SerialNumber }}</td> <!-- Make sure model has this field -->
+                                    <td>{{ asset.AssetModel }}</td>  <!-- Same -->
+                                    <td>{{ asset.PartNumber }}</td>   <!-- Same -->
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                        <p>No assets were added today.</p>
+                    {% endif %}
+                </div>
+                <div class="modal-buttons">
+                    <button onclick="printAssetsPDF()" class="print-confirm-btn">Print</button>
+                    <button onclick="closePrintModal()" class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+    <script>
+    
+        document.addEventListener("DOMContentLoaded", function() {
+            // Ensure the modal is hidden when the page loads
+            document.getElementById("logoutModal").style.display = "none";
+        });
+
+        // Open modal when avatar or username is clicked
+        function openLogoutModal() {
+            document.getElementById("logoutModal").style.display = "flex"; // Show modal
+        }
+
+        // Close modal when user clicks outside the modal content
+        function closeLogoutModal() {
+            document.getElementById("logoutModal").style.display = "none"; // Hide modal
+        }
+
+        // Close logout modal if user clicks outside the modal box
+        window.onclick = function(event) {
+            let logoutModal = document.getElementById("logoutModal");
+            // Check if the click happened outside of the modal content (to close it)
+            if (event.target === logoutModal) {
+                logoutModal.style.display = "none"; // Close modal
+            }
+        }
+
+
+
+
+
+
+        function showModal(imageSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        
+        modalImage.src = imageSrc;
+        modal.style.display = 'block';
+        
+        // Add show class after a brief delay to trigger transition
+        setTimeout(() => {
+            modal.classList.add('show');
+                }, 10);
+            }
+
+        function hideModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+            
+            // Wait for transition to complete before hiding
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        // Close modal when clicking outside the image
+        document.getElementById('imageModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                hideModal();
+            }
+        });
+
+        // Prevent modal from closing when clicking the image itself
+        document.getElementById('modalImage').addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+
+ 
+        function sortTable(columnIndex, isAscending) {
+        const tableBody = document.querySelector("#assetTable tbody");
+        const rows = Array.from(tableBody.rows);
+
+        rows.sort((a, b) => {
+            const aText = a.cells[columnIndex].textContent.trim();
+            const bText = b.cells[columnIndex].textContent.trim();
+            return isAscending
+                ? aText.localeCompare(bText, undefined, { numeric: true })
+                : bText.localeCompare(aText, undefined, { numeric: true });
+        });
+
+        rows.forEach(row => tableBody.appendChild(row));
+        }
+
+        // Add event listener to the "Asset ID" header
+        document.querySelector("th:nth-child(1)").addEventListener("click", function () {
+            const isAscending = !this.classList.contains("ascending");
+            sortTable(0, isAscending);
+            document.querySelectorAll("th").forEach(th => th.classList.remove("ascending", "descending"));
+            this.classList.add(isAscending ? "ascending" : "descending");
+        });
+        document.getElementById('typeFilter').addEventListener('change', function () {
+            const selectedType = this.value; // Get the selected asset type
+            const rows = document.querySelectorAll('#assetTable tbody tr'); // Get all rows in the table
+
+            rows.forEach(row => {
+                const typeCell = row.querySelector('[data-column="AssetType"]'); // Find the cell containing the asset type
+                const type = typeCell ? typeCell.textContent.trim() : ''; // Extract the asset type text
+                const typeMatch = selectedType === 'all' || type.toLowerCase() === selectedType.toLowerCase(); // Check if it matches
+
+                row.style.display = typeMatch ? '' : 'none'; // Show or hide the row based on the match
+            });
+        });
+        document.getElementById('categoryFilter').addEventListener('change', function () {
+            const selectedCategory = this.value;
+            const rows = document.querySelectorAll('#assetTable tbody tr');
+
+            rows.forEach(row => {
+                const categoryCell = row.querySelector('[data-column="Category"]');
+                const category = categoryCell ? categoryCell.textContent.trim() : '';  // Handle missing cell
+                const categoryMatch = selectedCategory === 'all' || category.toLowerCase() === selectedCategory.toLowerCase();
+
+                row.style.display = categoryMatch ? '' : 'none';
+            });
+        });
+
+        document.getElementById('Availability-Filter').addEventListener('change', function () {
+            const selectedAvailability = this.value;
+            const rows = document.querySelectorAll('#assetTable tbody tr');
+
+            rows.forEach(row => {
+                const availabilityCell = row.querySelector('[data-column="AssetAvailability"]');
+                const availability = availabilityCell ? availabilityCell.textContent.trim() : '';  // Handle missing cell
+                const availabilityMatch = selectedAvailability === 'all' || availability.toLowerCase() === selectedAvailability.toLowerCase();
+
+                row.style.display = availabilityMatch ? '' : 'none';
+            });
+        });
+        document.getElementById('Availability-Filter').addEventListener('change', function () {
+        const selectedCategory = this.value;
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const category = row.querySelector('[data-column="AssetAvailability"]').textContent.trim();
+
+            if (selectedCategory === 'all' || category === selectedCategory) {
+                row.style.display = ''; // Show the row
+            } else {
+                row.style.display = 'none'; // Hide the row
+                }
+            });
+        });
+            function openModal() {
+            document.getElementById("columnModal").style.display = "block";
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById("columnModal").style.display = "none";
+        }
+
+        // Handle column selection changes
+        function toggleColumn(columnName) {
+            const table = document.getElementById('assetTable');
+            const cells = table.querySelectorAll(`[data-column="${columnName}"]`);
+            
+            cells.forEach(cell => {
+                cell.style.display = cell.style.display === 'none' ? '' : 'none';
+            });
+        }
+        
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById("columnModal");
+            if (event.target == modal) {
+            closeModal();
+            }
+        };
+        document.getElementById('searchBox').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#assetTable tbody tr');
+            
+            rows.forEach(row => {
+                // Search across multiple columns
+                const searchableColumns = [
+                    'AssetID',
+                    'AssetName',
+                    'Category',
+                    'AssetNumber',
+                    'BondNumber',
+                    'PurchaseOrder',
+                    'PurchaseRequisition',
+                    'Capex',
+                    'SerialNumber',
+                    'PartNumber',
+                    'AssetModel',
+                    'AssetType',
+                    'AssetStatus',
+                    'Warehouse',
+                    'Location',
+                    'AssetProvider',
+                    'AssetClassification',
+                    'PurchaseDate',
+                    'Cost',
+                    'Warranty',
+                    'BondExpiryDate',
+                    'Specification',
+                    'RequiresCalibration',
+                    'LastCalibrationDate',
+                    'CalibrationAuthor',
+                    'CalibrationNotes',
+                    'CalibrationInterval',
+                    'NextCalibrationDate',
+                    'DocumentPath',
+                    'UploadDate',
+                    'ImagePath',
+                    'LastMaintenanceDate',
+                    'MaintenanceInterval',
+                    'MaintenanceNotes',
+                    'NextMaintenanceDate',
+                    'VendorName',
+                    'VendorContact',
+                    'VendorNotes',
+                ];
+                
+                const isMatch = searchableColumns.some(columnName => {
+                    const cell = row.querySelector(`[data-column="${columnName}"]`);
+                    return cell && cell.textContent.toLowerCase().includes(searchTerm);
+                });
+                
+                // Toggle row visibility based on search match
+                row.style.display = isMatch || searchTerm === '' ? '' : 'none';
+            });
+        });
+        const vendorModal = document.getElementById('vendorInfoModal');
+        const closeVendorModal = document.querySelector('.vendor-close-button');
+        const modalBgswVendorId= document.getElementById('vendorModalBgswVendorId');
+        const modalVendorName = document.getElementById('vendorModalName');
+        const modalVendorContact = document.getElementById('vendorModalContact');
+        const modalVendorNotes = document.getElementById('vendorModalNotes');
+
+        // Attach event listener to vendor links
+        document.querySelectorAll('.vendor-link').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault(); // Prevent default link behavior
+
+                // Populate modal with vendor data
+                modalVendorName.textContent = this.dataset.vendorName;
+                modalBgswVendorId.textContent = this.dataset.vendorBgswId;
+                modalVendorContact.textContent = this.dataset.vendorContact;
+                modalVendorNotes.textContent = this.dataset.vendorNotes;
+
+                // Show modal
+                vendorModal.classList.add('show');
+            });
+        });
+
+        // Close the modal
+        closeVendorModal.addEventListener('click', () => {
+            vendorModal.classList.remove('show');
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', event => {
+            if (event.target === vendorModal) {
+                vendorModal.classList.remove('show');
+            }
+        });  
+
+        // Function to check warranty status
+                function checkWarrantyStatus() {
+                const rows = document.querySelectorAll('#assetTable tbody tr');
+                
+                rows.forEach(row => {
+                    const purchaseDateCell = row.querySelector('[data-column="PurchaseDate"]');
+                    const warrantyCell = row.querySelector('[data-column="Warranty"]');
+                    
+                    if (purchaseDateCell && warrantyCell) {
+                        const purchaseDate = new Date(purchaseDateCell.textContent);
+                        const warrantyYears = parseInt(warrantyCell.textContent);
+                        const warrantyEndDate = new Date(purchaseDate);
+                        warrantyEndDate.setFullYear(warrantyEndDate.getFullYear() + warrantyYears);
+                        
+                        if (warrantyEndDate < new Date()) {
+                            warrantyCell.classList.remove('warranty-active');
+                            warrantyCell.classList.add('warranty-expired');
+                        } else {
+                            warrantyCell.classList.remove('warranty-expired');
+                            warrantyCell.classList.add('warranty-active');
+                        }
+                    }
+                });
+            }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default visible columns
+            const columns = document.querySelectorAll('th[data-column]');
+            const defaultColumns = ['AssetID', 'AssetName', 'Category',, 'Warranty', 'AssignedTo','VendorName', 'actions'];
+    
+            columns.forEach(column => {
+                const columnName = column.getAttribute('data-column');
+                if (!defaultColumns.includes(columnName)) {
+                    toggleColumn(columnName);
+                }
+            });
+    
+        
+            checkWarrantyStatus();
+            // Close vendor modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('vendorModal');
+                if (event.target === modal) {
+                    closeVendorModal();
+                }
+            };
+        });
+
+                document.getElementById('filter').addEventListener('change', function () {
+                    const selectedValue = this.value;
+                    const items = document.querySelectorAll('.item');
+
+                    items.forEach(item => {
+                        if (selectedValue === 'all' || item.getAttribute('data-type') === selectedValue) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+
+                // Initialize event listeners when the DOM is loaded
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Find the export button specifically by looking for the text content
+                    const exportButton = Array.from(document.querySelectorAll('.btn.btn-primary'))
+                        .find(button => button.textContent.trim() === 'Export List');
+                    
+                    if (exportButton) {
+                        exportButton.addEventListener('click', openExportModal);
+                    }
+                });
+
+                // Open modal
+    function openExportModal() {
+        document.getElementById('exportModal').style.display = 'block';
+    }
+
+    // Close modal
+    function closeExportModal() {
+        document.getElementById('exportModal').style.display = 'none';
+    }
+
+    // Handle form submission using AJAX
+    document.getElementById('exportForm').addEventListener('submit', function(event) {
+        event.preventDefault();  // Prevent normal form submission
+
+        var formData = new FormData(this);
+        
+        // Open a loading indicator or something similar if needed
+
+        // Make an AJAX request to submit the form data
+        fetch("{% url 'export_assets' %}", {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob();  // Get the exported file as a blob
+            } else {
+                alert('Error exporting data');
+            }
+        })
+        .then(blob => {
+            // Create a download link and trigger it to download the file
+            const link = document.createElement('a');
+            const fileName = "exported_assets";  // You can change this based on your format
+            const extension = document.querySelector("select[name='export_format']").value;
+            link.href = URL.createObjectURL(blob);
+            link.download = `${fileName}.${extension}`;
+            link.click();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while exporting.');
+        });
+    });
+    async function delete_Asset(AssetID) {
+        if (confirm("Delete Asset?")==true) {
+            window.open("/delete_Asset/"+AssetID,"_self");
+           alert("asset deletion successfully")
+        } else {
+            alert("Asset Deletion Cancelled");
+        }
+    }
+    function openEditModal(assetId) {
+    const modal = document.getElementById(`editAssetModal_${assetId}`);
+    if (modal) {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    }
+
+    function closeEditModal(assetId) {
+        const modal = document.getElementById(`editAssetModal_${assetId}`);
+        if (modal) {
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('edit-modal')) {
+            const assetId = event.target.id.split('_')[1];
+            closeEditModal(assetId);
+        }
+    });
+
+    // Prevent modal close when clicking inside
+    document.querySelectorAll('.edit-modal-content').forEach(content => {
+        content.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+    });
+
+    // Close modal when clicking cancel button
+    document.querySelectorAll('.submit-btn').forEach(button => {
+        if (button.textContent === 'Cancel') {
+            button.addEventListener('click', function() {
+                const modal = this.closest('.edit-modal');
+                const assetId = modal.id.split('_')[1];
+                closeEditModal(assetId);
+            });
+        }
+    });
+        function submitEditForm(assetId) {
+        const form = document.getElementById(`editAssetForm_${assetId}`);
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                closeEditModal(assetId);
+                // Optionally refresh the page or update the UI
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error updating asset');
+            console.error('Error:', error);
+        });
+    }
+    // Get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}// Function to get cookies (for CSRF token)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+// Function to open the email modal
+function openEmailModal(assetId) {
+    console.log("Opening email modal for Asset ID:", assetId);
+    const modal = document.getElementById('emailModal');
+    const overlay = document.getElementById('emailOverlay');
+
+    modal.setAttribute('data-asset-id', assetId); // Store the asset ID
+
+    // Make elements visible *before* adding the class for transition
+    overlay.style.display = 'block';
+    modal.style.display = 'block';
+
+    // Use setTimeout to allow the display change to render before adding class
+    // This ensures the transition plays correctly from the initial state
+    setTimeout(() => {
+        overlay.classList.add('show');
+        modal.classList.add('show');
+    }, 10); // A small delay is usually sufficient
+
+    loadTemplate(); // Load the template
+}
+
+// Function to close the email modal
+function closeEmailModal() {
+    const modal = document.getElementById('emailModal');
+    const overlay = document.getElementById('emailOverlay');
+
+    // Remove the show class to trigger the fade-out/scale-down transition
+    modal.classList.remove('show');
+    overlay.classList.remove('show');
+
+    // Wait for the transition to finish before hiding the elements completely
+    // Match the transition duration (0.3s = 300ms)
+    setTimeout(() => {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+    }, 300);
+}
+
+// Optional: Add listener to close modal when clicking overlay
+document.getElementById('emailOverlay').addEventListener('click', closeEmailModal);
+
+// Prevent closing when clicking inside the modal itself (important!)
+document.getElementById('emailModal').addEventListener('click', function(event) {
+    event.stopPropagation();
+});
+// (Keep the existing openEmailModal and closeEmailModal functions that toggle .show)
+
+// Add listener for the new close button
+// You might already have this if the close button also calls closeEmailModal()
+// document.querySelector('#emailModal .modal-close-btn').addEventListener('click', closeEmailModal);
+
+// Ensure send/cancel buttons work (they have onclick attributes now, so this might be redundant unless you remove onclick)
+// document.querySelector('#emailModal .modal-send-btn').addEventListener('click', sendEmail);
+// document.querySelector('#emailModal .modal-cancel-btn').addEventListener('click', closeEmailModal);
+
+// Keep the overlay click listener
+document.getElementById('emailOverlay').addEventListener('click', closeEmailModal);
+
+// Update the stopPropagation listener to target the new structure
+document.querySelector('#emailModal .modal-content').addEventListener('click', function(event) {
+    event.stopPropagation(); // Prevent clicks inside modal content from closing it
+});
+
+// Keep loadTemplate and sendEmail functions as they were (ensure they get assetId correctly)
+function loadTemplate() {
+    const recipientType = document.getElementById('recipientType').value;
+    // Get assetId from the main modal element
+    const assetId = document.getElementById('emailModal').getAttribute('data-asset-id');
+
+    if (!assetId) {
+        console.error("Asset ID not found on modal element.");
+        // Optionally show an error to the user
+        document.getElementById('emailContent').value = "Error: Could not load template. Asset information missing.";
+        return; // Stop execution if assetId is missing
+    }
+
+    console.log(`Loading template for type: ${recipientType}, asset: ${assetId}`); // Debug log
+
+    fetch(`/assets/get_email_template/?type=${recipientType}&asset_id=${assetId}`)
+        .then(response => {
+            if (!response.ok) {
+                // If response is not OK, try to parse error message
+                return response.json().then(err => { throw new Error(err.message || 'Server error') });
+            }
+            return response.json();
+         })
+        .then(data => {
+            if (data.success) {
+                document.getElementById('emailContent').value = data.template;
+            } else {
+                console.error('Error loading template:', data.message);
+                alert('Error loading template: ' + data.message);
+                document.getElementById('emailContent').value = `Error loading template: ${data.message}`;
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error loading template:', error);
+            alert('Failed to load email template. Check console for details.');
+             document.getElementById('emailContent').value = `Failed to load template. ${error.message}`;
+        });
+}
+
+
+function sendEmail() {
+    const recipientType = document.getElementById('recipientType').value;
+    const emailContent = document.getElementById('emailContent').value;
+    // Get assetId from the main modal element
+    const assetId = document.getElementById('emailModal').getAttribute('data-asset-id');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value; // Make sure CSRF token is present
+
+     if (!assetId) {
+        console.error("Cannot send email: Asset ID not found.");
+        alert("Error: Cannot send email. Asset information is missing.");
+        return;
+    }
+     if (!csrfToken) {
+        console.error("Cannot send email: CSRF token not found.");
+        alert("Error: Security token missing. Please refresh the page.");
+        return;
+    }
+
+    console.log(`Sending email for type: ${recipientType}, asset: ${assetId}`); // Debug log
+
+
+    const formData = new FormData();
+    formData.append('recipient_type', recipientType);
+    formData.append('asset_id', assetId);
+    formData.append('email_content', emailContent);
+    formData.append('csrfmiddlewaretoken', csrfToken);
+
+    // Add a loading indicator (optional)
+    const sendButton = document.querySelector('#emailModal .modal-send-btn');
+    const originalButtonText = sendButton.textContent;
+    sendButton.disabled = true;
+    sendButton.textContent = 'Sending...';
+
+
+    fetch('/assets/send_email_notification/', { // Ensure this URL is correct
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrfToken // Header is often needed too
+        }
+    })
+    .then(response => {
+        // Regardless of ok status, try to parse JSON
+         return response.json().then(data => ({ ok: response.ok, status: response.status, data }));
+    })
+    .then(({ ok, status, data }) => {
+         if (ok && data.success) {
+            alert('Email sent successfully!');
+            closeEmailModal();
+        } else {
+            // Handle both network errors caught by .catch and application errors from JSON
+            console.error('Error sending email:', data.message || `Server responded with status ${status}`);
+            alert('Error sending email: ' + (data.message || 'An unknown error occurred.'));
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error sending email:', error);
+        alert('Failed to send email. Check console for details.');
+    })
+    .finally(() => {
+         // Restore button state
+        sendButton.disabled = false;
+        sendButton.textContent = originalButtonText;
+    });
+}
+    function showRequests(assetId) {
+    document.getElementById('requestModal_' + assetId).style.display = 'block';
+}
+function closeRequests(assetId) {
+    document.getElementById('requestModal_' + assetId).style.display = 'none';
+}
+// Close modal when clicking outside
+window.onclick = function(event) {
+    if (event.target.classList.contains('request-modal')) {
+        event.target.style.display = 'none';
+    }
+}
+// Print Modal Functions
+function openPrintModal() {
+    document.getElementById('printModal').style.display = 'flex';
+}
+ 
+function closePrintModal() {
+    document.getElementById('printModal').style.display = 'none';
+}
+ 
+function loadJsPDF(callback) {
+    // Check if already loaded
+    if (typeof jspdf !== 'undefined') {
+        if (callback) callback();
+        return;
+    }
+   
+    // Create script element
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.onload = function() {
+        console.log("jsPDF loaded successfully");
+        if (callback) callback();
+    };
+    script.onerror = function() {
+        console.error("Failed to load jsPDF");
+        alert("Failed to load PDF generation library. Please try again later.");
+    };
+   
+    // Append to document
+    document.head.appendChild(script);
+}
+ 
+// Load jsPDF when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadJsPDF();
+});
+
+function printAssetsPDF() {
+    console.log("Print function called");
+
+    // First check if jsPDF is loaded
+    if (typeof jspdf === 'undefined') {
+        console.log("jsPDF not found, attempting to load");
+        loadJsPDF(function () {
+            console.log("jsPDF loaded via callback");
+            setTimeout(function () {
+                printAssetsPDF();
+            }, 500);
+        });
+        return;
+    }
+
+    console.log("jsPDF is loaded, continuing with print");
+
+    try {
+        // Close modal
+        closePrintModal();
+
+        // Format date
+        const today = new Date();
+        const dateString = today.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        const filename = `bosch_assets_${today.toISOString().slice(0, 10)}.pdf`;
+
+        // Get all asset rows
+        const rows = document.querySelectorAll('.asset-table tbody tr');
+        if (rows.length === 0) {
+            console.warn("No assets found to print");
+            alert("No assets found to print.");
+            return;
+        }
+
+        const assets = [];
+
+        rows.forEach((row, i) => {
+            try {
+                // Extract values from table cells
+                const assetNumber = row.cells[1]?.textContent.trim() || 'NA';
+                const assetName = row.cells[2]?.textContent.trim() || 'NA';
+                const serialNumber = row.cells[6]?.textContent.trim() || 'NA';
+                const modelNumber = row.cells[7]?.textContent.trim() || 'NA';
+                const partNumber = row.cells[8]?.textContent.trim() || 'NA';
+
+                // Push to assets array
+                assets.push({
+                    number: assetNumber,
+                    name: assetName,
+                    serial: serialNumber,
+                    model: modelNumber,
+                    part: partNumber
+                });
+            } catch (err) {
+                console.error(`Error processing row ${i}:`, err);
+            }
+        });
+
+        if (assets.length === 0) {
+            console.warn("No valid assets found after processing");
+            alert("Error: Could not extract asset information.");
+            return;
+        }
+
+        // Create PDF
+        const pdf = new jspdf.jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: 'a4',
+            hotfixes: ["px_scaling"]
+        });
+
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const labelWidth = 100;
+        const labelHeight = 70; // Increased height to fit all content
+        const margin = 5;
+        const labelsPerRow = Math.floor((pageWidth - margin) / (labelWidth + margin));
+        const labelsPerColumn = Math.floor((pageHeight - margin) / (labelHeight + margin));
+        const labelsPerPage = labelsPerRow * labelsPerColumn;
+
+        let currentPage = 0;
+
+        assets.forEach((asset, index) => {
+            const pageIndex = Math.floor(index / labelsPerPage);
+            if (pageIndex > currentPage) {
+                pdf.addPage();
+                currentPage = pageIndex;
+            }
+
+            const indexOnPage = index % labelsPerPage;
+            const row = Math.floor(indexOnPage / labelsPerRow);
+            const col = indexOnPage % labelsPerRow;
+
+            const x = margin + col * (labelWidth + margin);
+            const y = margin + row * (labelHeight + margin);
+
+            // Border
+            pdf.setDrawColor(0);
+            pdf.setLineWidth(0.5);
+            pdf.rect(x, y, labelWidth, labelHeight);
+
+            // Content
+            pdf.setFont("helvetica", "bold");
+            pdf.setFontSize(20);
+            pdf.setTextColor(237, 28, 36); // Bosch red
+            pdf.text('BOSCH', x + 10, y + 15);
+
+            pdf.setFont("helvetica", "normal");
+            pdf.setFontSize(10);
+            pdf.setTextColor(0);
+            pdf.text(`Asset Number: ${asset.number}`, x + 10, y + 25);
+            pdf.text(`Name: ${asset.name}`, x + 10, y + 33);
+            pdf.text(`Serial: ${asset.serial}`, x + 10, y + 41);
+            pdf.text(`Model: ${asset.model}`, x + 10, y + 49);
+            pdf.text(`Part No: ${asset.part}`, x + 10, y + 57);
+            pdf.text(`Date: ${dateString}`, x + 10, y + 65);
+        });
+
+        console.log("Saving PDF...");
+        pdf.save(filename);
+        console.log("PDF saved successfully");
+
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        alert("Error generating PDF: " + error.message);
+    }
+}
+ // JavaScript functions for vendor selection functionality in edit asset modal
+// Function to load vendors dynamically
+function loadVendorsForEdit(assetId) {
+    const vendorContainer = document.getElementById(`vendorSelectionContainer_${assetId}`);
+    const vendorsTableBody = document.getElementById(`vendors-table-body_${assetId}`);
+    const loadingIndicator = document.getElementById(`vendor-loading-indicator_${assetId}`);
+    
+    // Toggle visibility
+    if (vendorContainer.style.display === 'none') {
+        vendorContainer.style.display = 'block';
+        
+        // Show loading indicator
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'block';
+        }
+        vendorsTableBody.innerHTML = ''; // Clear previous content
+        vendorsTableBody.style.opacity = '0.5';
+        
+        // Fetch vendors from the server with improved error handling
+        fetch('/get-vendors/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                // Parse error response from the server
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Network response was not ok');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Check if vendors are in the response
+            const vendors = data.vendors || [];
+            
+            if (vendors.length === 0) {
+                throw new Error('No vendors found');
+            }
+            
+            // Clear loading indicator
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            vendorsTableBody.style.opacity = '1';
+            
+            // Populate the table with vendors
+            vendors.forEach(vendor => {
+                const row = document.createElement('tr');
+                
+                // Safely handle undefined or null values
+                const bgswVendorId = vendor.BgswVendorId || 'N/A';
+                const vendorName = vendor.VendorName || 'Unknown';
+                const vendorContact = vendor.VendorContact || 'No Contact';
+                
+                // Create category badges HTML
+                let categoryBadges = '';
+                if (vendor.categories_used && vendor.categories_used.length > 0) {
+                    categoryBadges = vendor.categories_used.map(category => 
+                        `<span class="category-badge">${escapeHtml(category)}</span>`
+                    ).join('');
+                } else {
+                    categoryBadges = '<span class="no-categories">None</span>';
+                }
+                
+                // Create the row HTML with escaped values to prevent XSS
+                row.innerHTML = `
+                    <td>${escapeHtml(bgswVendorId)}</td>
+                    <td>${escapeHtml(vendorName)}</td>
+                    <td>${escapeHtml(vendorContact)}</td>
+                    <td>${categoryBadges}</td>
+                    <td>
+                        <button type="button" class="select-vendor-btn" 
+                                onclick="selectVendorForEdit('${escapeHtml(assetId)}', '${escapeHtml(vendor.VendorID)}', '${escapeHtml(vendorName)}', '${escapeHtml(vendorContact)}')">
+                            Select
+                        </button>
+                    </td>
+                `;
+                
+                vendorsTableBody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching vendors:', error);
+            
+            // Hide loading indicator
+            if (loadingIndicator) {
+                loadingIndicator.style.display = 'none';
+            }
+            vendorsTableBody.style.opacity = '1';
+            
+            // Display error message
+            vendorsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="error-message">
+                        ${escapeHtml(error.message || 'Error loading vendors. Please try again.')}
+                    </td>
+                </tr>
+            `;
+        });
+    } else {
+        vendorContainer.style.display = 'none';
+    }
+}
+
+// Utility function to escape HTML to prevent XSS
+function escapeHtml(unsafe) {
+    // Convert to string first, handle null/undefined
+    if (unsafe === null || unsafe === undefined) {
+        return '';
+    }
+    
+    // Convert to string
+    const safeString = String(unsafe);
+    
+    return safeString
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+// Function to search vendors in the table
+function searchVendors(assetId) {
+    const input = document.getElementById(`vendorSearchInput_${assetId}`);
+    const filter = input.value.toUpperCase();
+    const tbody = document.getElementById(`vendors-table-body_${assetId}`);
+    const rows = tbody.getElementsByTagName('tr');
+    
+    for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        if (cells.length > 1) { // Skip rows with error messages or loading indicators
+            const vendorNameCell = cells[1];
+            const vendorIdCell = cells[0];
+            
+            if (vendorNameCell || vendorIdCell) {
+                const vendorNameText = vendorNameCell.textContent || vendorNameCell.innerText;
+                const vendorIdText = vendorIdCell.textContent || vendorIdCell.innerText;
+                
+                if (vendorNameText.toUpperCase().indexOf(filter) > -1 || 
+                    vendorIdText.toUpperCase().indexOf(filter) > -1) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+    }
+}
+// Function to select a vendor and update the form
+function selectVendorForEdit(assetId, vendorId) {
+    // Update the hidden field with the selected VendorID - include the assetId in the selector
+    document.getElementById(`editVendorID_${assetId}`).value = vendorId;
+
+    // Optionally, update the displayed vendor info (if needed)
+    const vendorInfoDiv = document.querySelector(`#editAssetForm_${assetId} .current-vendor-info`);
+    vendorInfoDiv.innerHTML = `
+        <p>Vendor updated successfully.</p>
+        <p>Vendor ID: ${vendorId}</p>
+        
+        <!-- Keep the hidden input visible after updating -->
+        <input type="hidden" id="editVendorID_${assetId}" name="vendorID" value="${vendorId}">
+    `;
+
+    // Hide the vendor selection table
+    const vendorSelectionContainer = document.getElementById(`vendorSelectionContainer_${assetId}`);
+    if (vendorSelectionContainer) {
+        vendorSelectionContainer.style.display = 'none';
+    }
+
+    // Optional: Show a confirmation message
+    const notification = document.createElement('div');
+    notification.className = 'vendor-change-notification';
+    notification.textContent = `Vendor updated successfully. Vendor ID: ${vendorId}`;
+    vendorInfoDiv.appendChild(notification);
+
+    // Remove the notification after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+function openCategoryModal(assetID) {
+        const modal = document.getElementById("category_modal");
+        modal.setAttribute("data-asset-id", assetID);
+        modal.style.display = "flex";
+    }
+
+    function selectCategory(button) {
+        const categoryId = button.getAttribute('data-category-id');
+        const categoryName = button.getAttribute('data-category-name');
+
+        const modal = document.getElementById("category_modal");
+        const assetID = modal.getAttribute("data-asset-id");
+
+        const displayInput = document.getElementById(`selectedCategoryDisplay_${assetID}`);
+        const hiddenInput = document.getElementById(`selectedCategory_${assetID}`);
+
+        if (displayInput && hiddenInput) {
+            displayInput.value = categoryName;
+            hiddenInput.value = categoryId;
+        }
+
+        modal.style.display = "none";
+    }
+
+function closeCategoryModal() {
+    document.getElementById("category_modal").style.display = "none";
+}
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('select-category-btn')) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const categoryId = e.target.dataset.categoryId;
+        const categoryName = e.target.dataset.categoryName;
+        const assetID = document.getElementById("category_modal").getAttribute("data-asset-id");
+
+        // Set category name to visible input and ID to hidden input
+        const displayInput = document.getElementById(`selectedCategoryDisplay_${assetID}`);
+        const hiddenInput = document.getElementById(`selectedCategory_${assetID}`);
+
+        if (displayInput && hiddenInput) {
+            displayInput.value = categoryName;
+            hiddenInput.value = categoryId;
+        }
+
+        closeCategoryModal();
+    }
+});
+
+    </script>
+</body>
+</html>

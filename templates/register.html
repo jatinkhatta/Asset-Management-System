@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - User System</title>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+ 
+        body {
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+ 
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+ 
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+ 
+        .header h1 {
+            color: #204D6C;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+ 
+        .header p {
+            color: #5f6368;
+        }
+ 
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+ 
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #202124;
+            font-weight: 500;
+        }
+ 
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+ 
+        .form-group input:focus {
+            outline: none;
+            border-color: #204D6C;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+        }
+ 
+        .error-message {
+            color: #d93025;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+ 
+        .password-requirements {
+            font-size: 0.75rem;
+            color: #5f6368;
+            margin-top: 0.25rem;
+        }
+ 
+        .submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background:#204D6C;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 1rem;
+        }
+ 
+        .submit-btn:hover {
+            background: #204D6C;
+        }
+ 
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #5f6368;
+        }
+ 
+        .login-link a {
+            color: #204D6C;
+            text-decoration: none;
+        }
+ 
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+ 
+        /* Password strength indicator */
+        .password-strength {
+            height: 4px;
+            width: 100%;
+            background: #eee;
+            margin-top: 0.5rem;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+ 
+        .strength-meter {
+            height: 100%;
+            width: 0;
+            transition: width 0.3s, background 0.3s;
+        }
+ 
+        .weak { background: #f44336; width: 33.33%; }
+        .medium { background: #ffa726; width: 66.66%; }
+        .strong { background: #66bb6a; width: 100%; }
+ 
+        /* Flash messages */
+        .flash-message {
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+ 
+        .flash-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+ 
+        .flash-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>Create Account</h1>
+<p>Sign up to get started</p>
+</div>
+{% if messages %}
+<ul>
+    {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<form action="{% url 'register' %}" method="POST" id="registerForm">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required 
+                       minlength="3" maxlength="50">
+        <span class="error-message">Username must be between 3 and 50 characters</span>
+    </div>
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+        <span class="error-message">Please enter a valid email address</span>
+    </div>
+    <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <input type="tel" id="phone" name="phone" pattern="^\+?\d{10,15}$" required>
+        <span class="error-message">Enter a valid phone number (10–15 digits)</span>
+    </div>
+    
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required 
+                       minlength="8">
+        <div class="password-strength">
+        <div class="strength-meter"></div>
+    </div>
+        <div class="password-requirements">
+                    Password must contain at least 8 characters, including:
+        <ul>
+            <li>One uppercase letter</li>
+            <li>One lowercase letter</li>
+            <li>One number</li>
+            <li>One special character</li>
+        </ul>
+        </div>
+    </div>
+ 
+            <div class="form-group">
+    <label for="confirm-password">Confirm Password</label>
+    <input type="password" id="confirm-password" name="confirm-password" required>
+    <span class="error-message">Passwords do not match</span>
+    </div>
+ 
+            <button type="submit" class="submit-btn">Create Account</button>
+</form>
+
+        <div class="login-link">
+            Already have an account? <a href="{% url 'login' %}">Login</a>
+</div>
+</div>
+ 
+    <script>
+        // Password strength checker
+        document.getElementById('password').addEventListener('input', function(e) {
+            const password = e.target.value;
+            const strengthMeter = document.querySelector('.strength-meter');
+            // Simple password strength calculation
+            let strength = 0;
+            if(password.match(/[a-z]/)) strength++;
+            if(password.match(/[A-Z]/)) strength++;
+            if(password.match(/[0-9]/)) strength++;
+            if(password.match(/[^a-zA-Z0-9]/)) strength++;
+            strengthMeter.className = 'strength-meter';
+            if(password.length >= 8) {
+                if(strength <= 2) strengthMeter.classList.add('weak');
+                else if(strength === 3) strengthMeter.classList.add('medium');
+                else strengthMeter.classList.add('strong');
+            }
+        });
+ 
+        // Password confirmation checker
+        document.getElementById('confirm-password').addEventListener('input', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = e.target.value;
+            const errorMessage = this.nextElementSibling;
+            if(password !== confirmPassword) {
+                errorMessage.style.display = 'block';
+            } else {
+                errorMessage.style.display = 'none';
+            }
+        });
+ 
+        // Form validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            if(password !== confirmPassword) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+            }
+        });
+</script>
+</body>
+</html>

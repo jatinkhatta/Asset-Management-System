@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Asset Management Report Builder</title>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+
+/* Modern Professional Asset Management Report Builder CSS */
+:root {
+  --primary-color: #1a73e8;
+  --primary-light: #e8f0fe;
+  --primary-dark: #0d47a1;
+  --secondary-color: #34a853;
+  --danger-color: #ea4335;
+  --warning-color: #fbbc05;
+  --text-primary: #202124;
+  --text-secondary: #5f6368;
+  --border-color: #dadce0;
+  --background-light: #f8f9fa;
+  --background-white: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.05);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-light);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Header Styling */
+.header {
+  background-color: var(--background-white);
+  color: var(--text-primary);
+  padding: var(--spacing-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow-sm);
+  height: 64px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+#toggle-sidebar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--primary-color);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+#toggle-sidebar:hover {
+  background-color: var(--primary-light);
+}
+
+h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+.header-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+/* Sidebar Styling */
+#sidebar {
+  width: 280px;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  height: calc(100vh - 124px);
+  background-color: var(--background-white);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-md);
+  overflow-y: auto;
+  z-index: 100;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-right: 1px solid var(--border-color);
+}
+
+#sidebar.collapsed {
+  transform: translateX(-300px);
+  box-shadow: none;
+}
+
+/* Report Controls */
+#report-controls {
+  margin-left: 280px;
+  margin-top: 64px;
+  padding: var(--spacing-lg);
+  position: relative;
+  transition: margin-left 0.3s ease;
+  background-color: var(--background-white);
+  border-bottom: 1px solid var(--border-color);
+}
+
+#report-controls h2 {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: var(--spacing-md);
+  color: var(--primary-color);
+}
+
+#report-controls label {
+  margin-right: var(--spacing-sm);
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+#report-controls select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--background-white);
+  font-size: 14px;
+  margin-right: var(--spacing-lg);
+}
+
+#report-controls input[type="color"] {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  height: 34px;
+  width: 34px;
+  padding: 0;
+}
+
+/* Report Area */
+#report-area {
+  margin-left: 280px;
+  margin-bottom: 60px;
+  padding: var(--spacing-lg);
+  min-height: calc(150vh - 15px);
+  position: relative;
+  transition: margin-left 0.3s ease;
+  background-color: var(--background-white);
+}
+
+#sidebar.collapsed + #report-controls,
+#sidebar.collapsed + #report-controls + #report-area {
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+/* Widgets */
+.widget {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-md);
+  cursor: move;
+  background-color: var(--background-white);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.widget:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+}
+
+.widget h3 {
+  margin-top: 0;
+  color: var(--primary-color);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.widget p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 0;
+  margin-top: var(--spacing-xs);
+}
+
+.widget-handle {
+  cursor: move;
+  height: 24px;
+  background-color: var(--background-light);
+  text-align: center;
+  border-radius: var(--radius-sm);
+  line-height: 24px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.widget-resize {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 10px;
+  height: 10px;
+  background-color: var(--border-color);
+  cursor: se-resize;
+  border-radius: 2px;
+}
+
+/* Report Items */
+.report-item {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  margin: 10px;
+  padding: var(--spacing-md);
+  position: absolute;
+  background-color: var(--background-white);
+  box-shadow: var(--shadow-sm);
+  min-width: 300px;
+  min-height: 200px;
+  transition: box-shadow 0.3s ease;
+}
+
+.report-item:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.tile-mode .report-item {
+  position: relative !important;
+  float: left;
+  margin: 10px;
+  width: calc(33.33% - 20px);
+  height: 300px;
+}
+
+@media (max-width: 1200px) {
+  .tile-mode .report-item {
+    width: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 768px) {
+  .tile-mode .report-item {
+    width: calc(100% - 20px);
+  }
+  
+  #sidebar {
+    width: 240px;
+  }
+  
+  #report-controls {
+    margin-left: 240px;
+  }
+  
+  #report-area {
+    margin-left: 240px;
+  }
+}
+
+/* Item Controls */
+.delete-btn {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  border-radius: 50%;
+  display: none;
+  transition: all 0.2s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-btn:hover {
+  background-color: #d32f2f;
+}
+
+.format-btn {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: 36px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+  border-radius: 50%;
+  display: none;
+  transition: all 0.2s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.format-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.report-item:hover .delete-btn,
+.report-item:hover .format-btn { 
+  display: flex; 
+}
+
+/* Report Heading */
+#heading-input {
+  width: 100%;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+/* Control Group */
+.control-group {
+  background-color: var(--background-light);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.control-group h3 {
+  margin-top: 0;
+  font-size: 15px;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Buttons */
+button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:hover {
+  background-color: var(--primary-dark);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+#download-report {
+  background-color: var(--secondary-color);
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 16px;
+}
+
+#download-report:hover {
+  background-color: #2a8644;
+}
+
+#add-heading {
+  background-color: var(--primary-color);
+  width: 100%;
+  margin-top: var(--spacing-sm);
+}
+
+/* Actions Bar */
+#actions-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--background-white);
+  padding: var(--spacing-md);
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+  border-top: 1px solid var(--border-color);
+}
+
+/* Chart Titles */
+.report-item h2 {
+  margin-top: 0;
+  color: var(--primary-color);
+  font-weight: 500;
+  font-size: 16px;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Resizable Helpers */
+#report-area .ui-resizable-helper {
+  border: 1px dotted var(--primary-color);
+  background-color: rgba(26, 115, 232, 0.1);
+}
+
+#report-controls .ui-resizable-helper {
+  border: 1px dotted var(--primary-color);
+  background-color: rgba(26, 115, 232, 0.1);
+}
+
+/* Chart Containers */
+.chart-container {
+  width: 100%;
+  height: calc(100% - 30px);
+  min-height: 180px;
+}
+
+/* Drag Effects */
+.drag-over {
+  background-color: var(--primary-light);
+  border: 2px dashed var(--primary-color);
+}
+
+/* Section Titles */
+.section-title {
+  color: var(--primary-color);
+  font-weight: 500;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-sm);
+  font-size: 16px;
+}
+
+/* Filters */
+.filters {
+  background-color: var(--background-light);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.filters select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  background-color: var(--background-white);
+  min-width: 140px;
+}
+
+.filters label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-right: 0;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Chart Categories */
+.chart-category {
+  margin-bottom: var(--spacing-lg);
+}
+
+.chart-category h4 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Format Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background-color: var(--background-white);
+  margin: 8% auto;
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  width: 500px;
+  max-width: 90%;
+  box-shadow: var(--shadow-lg);
+  animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.close {
+  color: var(--text-secondary);
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close:hover {
+  color: var(--text-primary);
+}
+
+.format-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.format-section h3 {
+  margin-top: 0;
+  font-size: 16px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-sm);
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.format-row {
+  display: flex;
+  margin-bottom: var(--spacing-md);
+  align-items: center;
+}
+
+.format-row label {
+  width: 100px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.format-row input, 
+.format-row select {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.format-row .color-preview {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border-color);
+  display: inline-block;
+  margin-left: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+}
+
+.format-actions {
+  text-align: right;
+  margin-top: var(--spacing-lg);
+}
+
+/* Sortable Placeholder */
+.sortable-placeholder {
+  border: 1px dashed var(--primary-color);
+  background-color: var(--primary-light);
+  height: 300px;
+  margin: 10px;
+  border-radius: var(--radius-md);
+}
+
+/* View Mode Toggle */
+.view-toggle {
+  display: flex;
+  margin-bottom: 0;
+}
+
+.view-toggle button {
+  background-color: var(--background-light);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 14px;
+}
+
+.view-toggle button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.view-toggle button:first-child {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.view-toggle button:last-child {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* Clear Fix */
+.tile-mode:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Chart Controls */
+.chart-controls {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: 68px;
+  z-index: 10;
+}
+
+.value-scale-selector {
+  font-size: 12px;
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+  
+  .filters select {
+    width: 100%;
+  }
+}
+
+/* Transitions */
+.report-item, .widget, button, .header, #sidebar, #report-controls, #report-area {
+  transition: all 0.3s ease;
+}
+
+/* Tooltip */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]:before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  background-color: var(--text-primary);
+  color: white;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+[data-tooltip]:hover:before {
+  opacity: 1;
+  visibility: visible;
+}
+
+#fullscreen-btn {
+  background-color: #2c3e50;
+  position: relative;
+  padding-right: 35px;
+}
+
+#fullscreen-btn::after {
+  content: '⛶';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#report-area:fullscreen {
+  background: white;
+  padding: 20px;
+  height: 100vh !important;
+  overflow-y: auto;
+}
+
+#report-area:-webkit-full-screen {
+  background: white;
+  padding: 20px;
+  height: 100vh !important;
+  overflow-y: auto;
+}
+
+#report-area:-moz-full-screen {
+  background: white;
+  padding: 20px;
+  height: 100vh !important;
+  overflow-y: auto;
+}
+
+
+/* Add these styles */
+.heading-item {
+  position: absolute;
+  min-width: 150px;
+  min-height: 30px;
+  cursor: move;
+  padding: 5px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s;
+  overflow: hidden; /* Prevent text overflow */
+}
+
+.heading-item:hover {
+  border-color: var(--border-color);
+}
+
+.heading-item h2 {
+  margin: 0;
+  padding: 0 24px 0 5px; /* Add right padding for delete button */
+  width: 100%;
+  height: 100%;
+  color: var(--primary-color);
+  text-align: center;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: normal; /* Allow text wrapping */
+  word-wrap: break-word; /* Break long words */
+  overflow: hidden;
+  box-sizing: border-box;
+  transition: font-size 0.3s ease; /* Smooth font resizing */
+}
+
+/* Invisible resize handles */
+.ui-resizable-handle {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+/* Custom handle positions */
+.ui-resizable-s { 
+  bottom: 0;
+  height: 8px;
+  cursor: ns-resize;
+}
+.ui-resizable-e { 
+  right: 0;
+  width: 8px;
+  cursor: ew-resize;
+}
+.ui-resizable-se { 
+  right: 0;
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  cursor: nwse-resize;
+}
+
+/* Delete button styling */
+.heading-item .delete-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: none;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  padding: 0;
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.heading-item:hover .delete-btn {
+  display: block;
+}
+
+.asset-table {
+    font-size: 14px;
+    margin: 10px;
+}
+
+.asset-table th {
+    background-color: #f8f9fa;
+    text-align: left;
+    position: sticky;
+    top: 0;
+}
+
+.asset-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.asset-table td {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+  </style>
+<script src="/static/jquery-3.6.0.js"></script>
+<script src="/static/jquery-ui.js"></script>
+<script src="/static/jspdf.umd.min.js"></script>
+<script src="/static/html2canvas.min.js"></script>
+<script src="/static/chart.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="header-left">
+          <button id="toggle-sidebar" title="Toggle Sidebar">☰</button>
+          <h1>Asset Management Report Builder</h1>
+          
+        </div>
+        <div class="header-buttons">
+          <div class="view-toggle">
+            <button id="free-layout" class="active">Free Layout</button>
+            <button id="tile-layout">Tile Layout</button>
+          </div>
+        </div>
+      </div>
+ 
+  <div id="sidebar">
+    
+    <div class="chart-category">
+      <h4>Basic Charts</h4>
+      <div class="widget" data-type="bar" draggable="true">
+        <h3>Asset Status Bar Chart</h3>
+        <p>Distribution of assets by status.</p>
+      </div>
+      <div class="widget" data-type="pie" draggable="true">
+        <h3>Asset Category Pie Chart</h3>
+        <p>Distribution of assets by category.</p>
+      </div>
+      <div class="widget" data-type="line" draggable="true">
+        <h3>Asset Cost Timeline</h3>
+        <p>Asset acquisition cost over time.</p>
+      </div>
+      <div class="widget" data-type="doughnut" draggable="true">
+        <h3>Asset Provider Breakdown</h3>
+        <p>Assets by provider (CSI/BGSW).</p>
+      </div>
+      <!-- In the Basic Charts section -->
+      <div class="widget" data-type="table" draggable="true">
+        <h3>Asset Provider Table</h3>
+        <p>Detailed breakdown of assets by provider.</p>
+      </div>
+    </div>
+    
+    <div class="chart-category">
+      <h4>Advanced Charts</h4>
+      <div class="widget" data-type="radar" draggable="true">
+        <h3>Location Asset Count</h3>
+        <p>Compare locations across regions.</p>
+      </div>
+      <div class="widget" data-type="polar" draggable="true">
+        <h3>Asset Type Distribution</h3>
+        <p>Hardware vs Software distribution.</p>
+      </div>
+      <div class="widget" data-type="bubble" draggable="true">
+        <h3>Asset Value Analysis</h3>
+        <p>Cost vs Category size.</p>
+      </div>
+      <div class="widget" data-type="horizontalBar" draggable="true">
+        <h3>Warranty Time Remaining</h3>
+        <p>Time left on warranty by asset.</p>
+      </div>
+    </div>
+    
+    <div class="chart-category">
+      <h4>Specialized Charts</h4>
+      <div class="widget" data-type="stacked" draggable="true">
+        <h3>Asset Usage Stacked Chart</h3>
+        <p>Usage time across departments.</p>
+      </div>
+      <div class="widget" data-type="scatter" draggable="true">
+        <h3>Category-wise Cost & Idle Days</h3>
+        <p>Total Cost vs Idle Days by Category</p>
+      </div>
+      <div class="widget" data-type="area" draggable="true">
+        <h3>Depreciation Area Chart</h3>
+        <p>Asset value depreciation by type (Hardware/Software)</p>
+      </div>
+      
+      <div class="widget" data-type="gauge" draggable="true">
+        <h3>Budget Utilization Gauge</h3>
+        <p>Percentage of budget utilized.</p>
+      </div>
+    </div>
+    
+    <h3 class="section-title">Report Controls</h3>
+    <div class="control-group">
+      <h3>Add Heading</h3>
+      <input type="text" id="heading-input" placeholder="Enter heading text" >
+      <button id="add-heading">Add Heading</button>
+    </div>
+  </div>
+  <div id="report-controls">
+    <h2>Report Controls</h2>
+    <label for="bg-color">Report Background Color:</label>
+    <select id="bg-color">
+      <option value="default">Default</option>
+      <option value="#ffffff">White</option>
+      <option value="#f0f0f0">Light Gray</option>
+      <option value="#e0f7fa">Light Blue</option>
+      <option value="#fff3e0">Light Orange</option>
+      <option value="custom">Custom...</option>
+    </select>
+    <input type="color" id="custom-color" style="display: none;" />
+  </div>
+
+  <div id="report-area" class="drop-zone">
+    <div class="filters">
+      <label for="category-filter">Category:</label>
+      <select id="category-filter">
+        <option value="">All Categories</option>
+          {% for category in categories %}
+            <option value="{{ category }}">{{ category }}</option>
+          {% endfor %}
+      </select>
+
+ 
+      <label for="status-filter">Status:</label>
+      <select id="status-filter">
+        <option value="">All Statuses</option>
+        <option value="Working">Working</option>
+        <option value="Under Maintenance">Under Maintenance</option>
+        <option value="Not Working">Not Working</option>
+      </select>
+ 
+      
+      <!-- New Asset Provider Filter -->
+        <label for="asset-provider-filter">Asset Provider:</label>
+        <select id="asset-provider-filter">
+            <option value="">All Providers</option>
+            <option value="BGSW">BGSW</option>
+            <option value="CSI-Purchased">CSI-Purchased</option>
+            <option value="CSI-Borrowed">CSI-Borrowed</option>
+        </select>
+    </div>
+    
+   
+    
+  </div>
+  
+  <div id="actions-bar">
+    <button id="fullscreen-btn">Enter Fullscreen</button>
+    <button id="download-report">Download Report (PDF)</button>
+  </div>
+</div>
+
+<!-- Format Modal -->
+<div id="formatModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Chart Format Options</h2>
+    
+    <div class="format-section">
+      <h3>Title</h3>
+      <div class="format-row">
+        <label>Chart Title:</label>
+        <input type="text" id="chart-title" placeholder="Enter chart title">
+      </div>
+      <div class="format-row">
+        <label>Title Color:</label>
+        <input type="color" id="title-color" value="#2c3e50">
+        <div class="color-preview" id="title-color-preview"></div>
+      </div>
+      <div class="format-row">
+        <label>Font Size:</label>
+        <select id="title-font-size">
+          <option value="12">Small (12px)</option>
+          <option value="16" selected>Medium (16px)</option>
+          <option value="20">Large (20px)</option>
+          <option value="24">Extra Large (24px)</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="format-section">
+      <h3>Legend</h3>
+      <div class="format-row">
+        <label>Show Legend:</label>
+        <select id="show-legend">
+          <option value="true" selected>Yes</option>
+          <option value="false">No</option>
+        </select>
+      </div>
+      <div class="format-row">
+        <label>Position:</label>
+        <select id="legend-position">
+          <option value="top" selected>Top</option>
+          <option value="bottom">Bottom</option>
+          <option value="left">Left</option>
+          <option value="right">Right</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="format-section">
+      <h3>Colors</h3>
+      <div class="format-row">
+        <label>Color Scheme:</label>
+        <select id="color-scheme">
+          <option value="default" selected>Default</option>
+          <option value="pastel">Pastel</option>
+          <option value="bright">Bright</option>
+          <option value="cool">Cool</option>
+          <option value="warm">Warm</option>
+        </select>
+      </div>
+      <div class="format-row">
+        <label>Background:</label>
+        <input type="color" id="background-color" value="#ffffff">
+        <div class="color-preview" id="background-color-preview"></div>
+      </div>
+    </div>
+    
+    <div class="format-actions">
+      <button id="apply-format">Apply Changes</button>
+    </div>
+  </div>
+</div>
+ 
+<script>
+// Initialize drag-and-drop functionality
+document.addEventListener('DOMContentLoaded', () => {
+  initDragAndDrop();
+ 
+  // Set up filter change events
+  setupFilters();
+  
+  const bgColorDropdown = document.getElementById('bg-color');
+const customColorPicker = document.getElementById('custom-color');
+const reportArea = document.getElementById('report-area');
+
+// Event listener for background color dropdown
+bgColorDropdown.addEventListener('change', (event) => {
+  const selectedValue = event.target.value;
+
+  if (selectedValue === 'custom') {
+    // Show the custom color picker
+    customColorPicker.style.display = 'inline-block';
+  } else {
+    // Hide the custom color picker if not needed
+    customColorPicker.style.display = 'none';
+
+    // Apply the selected background color
+    if (selectedValue === 'default') {
+      reportArea.style.backgroundColor = ''; // Reset to default
+    } else {
+      reportArea.style.backgroundColor = selectedValue;
+    }
+  }
+});
+
+// Event listener for custom color picker
+customColorPicker.addEventListener('input', (event) => {
+  const selectedColor = event.target.value;
+  reportArea.style.backgroundColor = selectedColor;
+});
+
+
+  // Set up toggle sidebar functionality
+  document.getElementById('toggle-sidebar').addEventListener('click', function() {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  });
+  
+  // Set up view toggle functionality
+  document.getElementById('free-layout').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('tile-layout').classList.remove('active');
+    document.getElementById('report-area').classList.remove('tile-mode');
+    // Reset positions for free layout
+    const reportItems = document.querySelectorAll('.report-item');
+    reportItems.forEach(item => {
+      item.style.position = 'absolute';
+      $(item).draggable('enable');
+    });
+  });
+  
+  document.getElementById('tile-layout').addEventListener('click', function() {
+    this.classList.add('active');
+    document.getElementById('free-layout').classList.remove('active');
+    document.getElementById('report-area').classList.add('tile-mode');
+    // Disable dragging in tile mode
+    const reportItems = document.querySelectorAll('.report-item');
+    reportItems.forEach(item => {
+      item.style.position = 'relative';
+      item.style.left = 'auto';
+      item.style.top = 'auto';
+      $(item).draggable('disable');
+    });
+    
+    // Make report area sortable in tile mode
+    $('#report-area').sortable({
+      items: '.report-item',
+      placeholder: 'sortable-placeholder',
+      tolerance: 'pointer'
+    });
+  });
+  
+  // Set up format modal
+  setupFormatModal();
+});
+
+// Format modal setup
+function setupFormatModal() {
+  const modal = document.getElementById('formatModal');
+  const closeBtn = modal.querySelector('.close');
+  const applyBtn = document.getElementById('apply-format');
+  
+  // Close the modal
+  closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+  
+  // Close when clicking outside
+  window.addEventListener('click', (event) => {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+  
+  // Update color preview
+  document.getElementById('title-color').addEventListener('input', function() {
+    document.getElementById('title-color-preview').style.backgroundColor = this.value;
+  });
+  
+  document.getElementById('background-color').addEventListener('input', function() {
+    document.getElementById('background-color-preview').style.backgroundColor = this.value;
+  });
+  
+  // Apply format changes
+  applyBtn.addEventListener('click', () => {
+    const chartTitle = document.getElementById('chart-title').value;
+    const titleColor = document.getElementById('title-color').value;
+    const titleFontSize = document.getElementById('title-font-size').value;
+    const showLegend = document.getElementById('show-legend').value === 'true';
+    const legendPosition = document.getElementById('legend-position').value;
+    const colorScheme = document.getElementById('color-scheme').value;
+    const backgroundColor = document.getElementById('background-color').value;
+    
+    // Apply changes to the current chart
+    if (currentChartElement) {
+      const chartType = currentChartElement.getAttribute('data-chart-type');
+      const chartContainer = currentChartElement.querySelector('.chart-container');
+      
+      // Store format settings as data attributes
+      currentChartElement.setAttribute('data-title', chartTitle);
+      currentChartElement.setAttribute('data-title-color', titleColor);
+      currentChartElement.setAttribute('data-title-size', titleFontSize);
+      currentChartElement.setAttribute('data-show-legend', showLegend);
+      currentChartElement.setAttribute('data-legend-position', legendPosition);
+      currentChartElement.setAttribute('data-color-scheme', colorScheme);
+      currentChartElement.setAttribute('data-background', backgroundColor);
+      
+      // Update widget handle with new title if provided
+      if (chartTitle) {
+        currentChartElement.querySelector('.widget-handle').innerText = chartTitle;
+      }
+      
+      // Rerender the chart with new settings
+      renderChart(chartType, chartContainer, true);
+    }
+    
+    modal.style.display = 'none';
+  });
+}
+
+// Global variable to track the current chart being formatted
+let currentChartElement = null;
+ 
+// Set up filter change handlers
+function setupFilters() {
+    const filters = [
+    document.getElementById('category-filter'),
+    document.getElementById('status-filter'),
+   
+    document.getElementById('asset-provider-filter') // New filter
+  ];
+
+  filters.forEach(filter => {
+    if (filter) {
+      filter.addEventListener('change', () => {
+        updateAllCharts();
+      });
+    }
+  });
+}
+ 
+// Update all charts with current filter settings
+function updateAllCharts() {
+  const reportItems = document.querySelectorAll('.report-item');
+  reportItems.forEach(item => {
+    if (item.querySelector('canvas')) {
+      const chartType = item.getAttribute('data-chart-type');
+      const chartContainer = item.querySelector('.chart-container');
+      renderChart(chartType, chartContainer, true);
+    }
+  });
+}
+ 
+// Initialize drag-and-drop functionality
+function initDragAndDrop() {
+  // Add event listeners to widgets in the sidebar
+  const widgets = document.querySelectorAll('.widget');
+  widgets.forEach(widget => {
+    widget.addEventListener('dragstart', handleDragStart);
+  });
+ 
+  // Add event listeners to the report area (drop zone)
+  const dropZone = document.querySelector('#report-area');
+  dropZone.addEventListener('dragover', handleDragOver);
+  dropZone.addEventListener('drop', handleDrop);
+  dropZone.addEventListener('dragleave', function(e) {
+    this.classList.remove('drag-over');
+  });
+}
+ 
+// Handle drag start event
+function handleDragStart(e) {
+  e.dataTransfer.setData('application/json', JSON.stringify({
+    type: this.getAttribute('data-type'),
+    title: this.querySelector('h3').innerText
+  }));
+}
+ 
+// Handle drag over event
+function handleDragOver(e) {
+  e.preventDefault();
+  this.classList.add('drag-over');
+ 
+  // Extend the report area if dragging near the bottom edge
+  const reportArea = document.getElementById('report-area');
+  const mouseY = e.clientY;
+  const reportBottom = reportArea.getBoundingClientRect().bottom;
+ 
+  if (mouseY > reportBottom - 50) {
+    reportArea.style.height = `${reportArea.offsetHeight + 50}px`;
+  }
+}
+ 
+// Handle drop event
+function handleDrop(e) {
+  e.preventDefault();
+  this.classList.remove('drag-over');
+
+  try {
+    const fieldData = JSON.parse(e.dataTransfer.getData('application/json'));
+    const newItem = createChartItem(fieldData.type, fieldData.title);
+    
+    // Position based on layout mode
+    if (!document.getElementById('report-area').classList.contains('tile-mode')) {
+      newItem.style.position = 'absolute'; // Ensure absolute positioning
+      newItem.style.left = `${e.offsetX}px`;
+      newItem.style.top = `${e.offsetY}px`;
+    }
+    
+    this.appendChild(newItem);
+    
+    // Make sure to make the item resizable before rendering chart
+    makeResizable(newItem);
+    
+    // Then render the chart
+    renderChart(fieldData.type, newItem.querySelector('.chart-container'));
+    
+    if (!document.getElementById('report-area').classList.contains('tile-mode')) {
+      makeDraggable(newItem);
+    }
+  } catch (error) {
+    console.error('Error processing dropped field:', error);
+  }
+}
+
+
+// Continuation of the openFormatModal function
+function openFormatModal(chartElement) {
+  currentChartElement = chartElement;
+  
+  // Get current settings or use defaults
+  const chartTitle = chartElement.getAttribute('data-title') || chartElement.querySelector('.widget-handle').innerText;
+  const titleColor = chartElement.getAttribute('data-title-color') || '#2c3e50';
+  const titleFontSize = chartElement.getAttribute('data-title-size') || '16';
+  const showLegend = chartElement.getAttribute('data-show-legend') || 'true';
+  const legendPosition = chartElement.getAttribute('data-legend-position') || 'top';
+  const colorScheme = chartElement.getAttribute('data-color-scheme') || 'default';
+  const backgroundColor = chartElement.getAttribute('data-background') || '#ffffff';
+  
+  // Populate the modal with current settings
+  document.getElementById('chart-title').value = chartTitle;
+  document.getElementById('title-color').value = titleColor;
+  document.getElementById('title-color-preview').style.backgroundColor = titleColor;
+  document.getElementById('title-font-size').value = titleFontSize;
+  document.getElementById('show-legend').value = showLegend;
+  document.getElementById('legend-position').value = legendPosition;
+  document.getElementById('color-scheme').value = colorScheme;
+  document.getElementById('background-color').value = backgroundColor;
+  document.getElementById('background-color-preview').style.backgroundColor = backgroundColor;
+  
+  // Show the modal
+  document.getElementById('formatModal').style.display = 'block';
+}
+
+// Make an element draggable
+function makeDraggable(element) {
+  $(element).draggable({
+    containment: '#report-area',
+    start: function() {
+      $(this).css('z-index', 100);
+    },
+    stop: function() {
+      $(this).css('z-index', 1);
+    }
+  });
+}
+
+// Make an element resizable
+function makeResizable(element) {
+  if (!element) {
+    console.error("makeResizable called with null element");
+    return;
+  }
+  // First, check if jQuery and jQuery UI are properly loaded
+  if (typeof $ === 'undefined' || !$.fn.resizable) {
+    console.error("jQuery or jQuery UI resizable is not loaded");
+    return;
+  }
+
+  if (element.classList.contains('heading-item')) {
+    $(element).resizable({
+      handles: 'se',
+      minWidth: 150,
+      minHeight: 30,
+      resize: (event, ui) => {
+        adjustHeadingFontSize(element);
+        // Force redraw for smooth transition
+        element.style.transform = 'translateZ(0)';
+      }
+    });
+  }
+ 
+  $(element).resizable({
+    containment: '#report-area',
+    handles: 'se',
+    minWidth: 150,  // Reduced minimum width
+    minHeight: 30, // Reduced minimum height
+    resize: function(event, ui) {
+      // Get the chart container
+      const chartContainer = element.querySelector('.chart-container');
+      if (chartContainer) {
+        chartContainer.style.width = '100%';
+        chartContainer.style.height = 'calc(100% - 30px)';
+ 
+        // Force the chart to update to new dimensions
+        if (chartContainer._chart) {
+          console.log("Resizing chart...");
+          // Give the DOM a moment to settle with new dimensions
+          setTimeout(() => {
+            chartContainer._chart.resize();
+            chartContainer._chart.update();
+          }, 50);
+        }
+      }
+    }
+    
+  });
+}
+
+// Add this to your existing event delegation
+document.getElementById('report-area').addEventListener('click', function(e) {
+  if (e.target.classList.contains('delete-btn')) {
+    e.target.closest('.report-item').remove();
+  }
+});
+// Add heading functionality
+document.getElementById('add-heading').addEventListener('click', function() {
+  const headingText = document.getElementById('heading-input').value.trim();
+  if (headingText) {
+    const headingElement = document.createElement('div');
+    headingElement.className = 'report-item heading-item';
+    headingElement.innerHTML = `
+      <h2>${headingText}</h2>
+      <button class="delete-btn" title="Delete Heading">×</button>
+    `;
+    
+    // Set initial position and size
+    headingElement.style.width = '300px';
+    headingElement.style.height = '40px';
+    headingElement.style.position = 'absolute';
+    
+    document.getElementById('report-area').appendChild(headingElement);
+    document.getElementById('heading-input').value = '';
+
+    reportArea.appendChild(headingElement);
+    adjustHeadingFontSize(headingElement); // Initial size adjustment
+    
+    // Initialize interactions
+    makeDraggable(headingElement);
+    makeResizable(headingElement);
+  }
+});
+// Get current filter values
+function getFilters() {
+    return {
+    category: document.getElementById('category-filter').value,
+    status: document.getElementById('status-filter').value,
+  
+    assetProvider: document.getElementById('asset-provider-filter').value // New filter
+  };
+}
+
+
+
+// Helper to get color by index
+function getColorByIndex(index) {
+  const colors = ['#3498db', '#e74c3c', '#f39c12', '#2ecc71', '#9b59b6'];
+  return colors[index % colors.length];
+}
+
+// Get color scheme based on settings
+function getColorScheme(scheme) {
+    const schemes = {
+    default: ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#d35400', '#2980b9', '#c0392b'],
+    pastel: ['#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#1f78b4', '#33a02c', '#e31a1c', '#ff7f00'],
+    corporate: ['#0077b6', '#023e8a', '#03045e', '#00b4d8', '#90e0ef', '#caf0f8', '#48cae4', '#ade8f4', '#023e8a', '#0077b6'],
+    warm: ['#ff7f0e', '#ff9966', '#ffcc99', '#ff8000', '#ff944d', '#ffad85', '#ffb380', '#ff9900', '#ffcc00', '#ffe066'],
+    cool: ['#1f77b4', '#aec7e8', '#17becf', '#9edae5', '#7fbf7b', '#d6ffb7', '#6baed6', '#c7e9c0', '#74c476', '#41ab5d'],
+    monochrome: ['#1a1a1a', '#333333', '#4d4d4d', '#666666', '#808080', '#999999', '#b3b3b3', '#cccccc', '#e6e6e6', '#f2f2f2']
+  };
+  
+  return schemes[scheme] || schemes.default;
+}
+
+// Modified renderChart function to fetch real data from backend
+
+function renderChart(chartType, container, update = false) {
+  if (!container) return;
+  
+  // Remove any existing chart if updating
+  if (update && container._chart) {
+    container._chart.destroy();
+  }
+  
+  // Get current filter values
+  const filters = getFilters();
+  
+  // Construct query parameters
+  const queryParams = new URLSearchParams({
+    chart_type: chartType,
+    category: filters.category,
+    status: filters.status,
+    date_range: filters.dateRange,
+    asset_provider: filters.assetProvider
+  });
+  
+  // Fetch data from backend
+  fetch(`/asset_stats_view/?${queryParams.toString()}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(chartData => {
+      // Get chart settings from data attributes
+      const chartElement = container.closest('.report-item');
+      const chartTitle = chartElement.getAttribute('data-title') || chartElement.querySelector('.widget-handle').innerText;
+      const titleColor = chartElement.getAttribute('data-title-color') || '#2c3e50';
+      const titleFontSize = chartElement.getAttribute('data-title-size') || 16;
+      const showLegend = chartElement.getAttribute('data-show-legend') !== 'false';
+      const legendPosition = chartElement.getAttribute('data-legend-position') || 'top';
+      const colorScheme = chartElement.getAttribute('data-color-scheme') || 'default';
+      const backgroundColor = chartElement.getAttribute('data-background') || '#ffffff';
+      
+      // Apply color scheme to chart data
+      const colors = getColorScheme(colorScheme);
+      
+      // Handle different chart data formats
+      let chartDataFormatted = chartData;
+      
+      // Handle the case when the backend returns {type, data, options} format
+      if (chartData.type && chartData.data) {
+        chartDataFormatted = chartData.data;
+      }
+      
+      if (chartDataFormatted.datasets) {
+        chartDataFormatted.datasets.forEach((dataset, index) => {
+          if (chartType === 'pie' || chartType === 'doughnut' || chartType === 'polar') {
+            dataset.backgroundColor = colors.map(color => color);
+          } else if (!dataset.backgroundColor || dataset.backgroundColor.indexOf('#') === 0) {
+            dataset.backgroundColor = colors[index % colors.length];
+            if (dataset.borderColor && dataset.borderColor.indexOf('#') === 0) {
+              dataset.borderColor = colors[index % colors.length];
+            }
+          }
+        });
+      }
+      
+      // Create chart canvas if it doesn't exist
+      let canvas = container.querySelector('canvas');
+      if (!canvas) {
+        canvas = document.createElement('canvas');
+        container.appendChild(canvas);
+      }
+      
+      // Set container background
+      container.style.backgroundColor = backgroundColor;
+      
+      // IMPROVED: Base chart options with better responsiveness
+      let options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: {
+            display: true,
+            text: chartTitle,
+            color: titleColor,
+            font: {
+              size: parseInt(titleFontSize)
+            }
+          },
+          legend: {
+            display: showLegend,
+            position: legendPosition
+          }
+        },
+        // ADDED: Improved layout options
+        layout: {
+          padding: {
+            top: 10,
+            right: 10,
+            bottom: 10,
+            left: 10
+          }
+        }
+      };
+      
+      // Merge with options from backend if provided
+      if (chartData.options) {
+        options = { ...options, ...chartData.options };
+      }
+      
+      // Special options for specific chart types
+      if (chartType === 'stacked') {
+        options.scales = {
+          x: {
+            stacked: true
+          },
+          y: {
+            stacked: true
+          }
+        };
+      } 
+       else if (chartType === 'bubble' || chartType === 'scatter') {
+        // IMPROVED: Better scale options for bubble and scatter charts
+        options.scales = {
+          x: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Category'
+            },
+            // This helps ensure the axis adapts to the data
+            grace: '5%'
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Value'
+            },
+            // ADDED: This ensures there's room at the top for large values
+            grace: '10%',
+            // ADDED: Auto-scaling with suggested min/max values
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 10
+            }
+          }
+        };
+      }
+      
+      // Create chart instance based on type
+      let chartInstance;
+      switch(chartType) {
+        case 'bar':
+          chartInstance = new Chart(canvas, {
+            type: 'bar',
+            data: chartDataFormatted,
+            options: options
+          });
+          break;
+        case 'pie':
+          chartInstance = new Chart(canvas, {
+            type: 'pie',
+            data: chartDataFormatted,
+            options: options
+          });
+          break;
+        case 'line':
+          chartInstance = new Chart(canvas, {
+            type: 'line',
+            data: chartDataFormatted,
+            options: options
+          });
+          break;
+        case 'doughnut':
+          chartInstance = new Chart(canvas, {
+            type: 'doughnut',
+            data: chartDataFormatted,
+            options: options
+          });
+          break;
+        case 'table':
+          // Destroy existing table if exists
+          if (container._table) {
+              container._table.destroy();
+          }
+          
+          // Create table structure
+          const tableHTML = `
+              <div class="table-container" style="overflow: auto; height: 100%;">
+                  <table class="asset-table" style="width: 100%; border-collapse: collapse;">
+                      <thead>
+                          <tr>
+                              ${chartDataFormatted.headers.map(header => 
+                                  `<th style="padding: 8px; border-bottom: 2px solid #3498db;">${header}</th>`
+                              ).join('')}
+                          </tr>
+                      </thead>
+                      <tbody>
+                          ${chartDataFormatted.rows.map(row => `
+                              <tr>
+                                  <td style="padding: 8px; border-bottom: 1px solid #eee;">${row.provider}</td>
+                                  <td style="padding: 8px; border-bottom: 1px solid #eee;">${row.count}</td>
+                                  <td style="padding: 8px; border-bottom: 1px solid #eee;">₹${row.total_cost.toLocaleString()}</td>
+                              </tr>
+                          `).join('')}
+                      </tbody>
+                  </table>
+              </div>
+          `;
+          
+          // Clear container and add table
+          container.innerHTML = tableHTML;
+          container._table = true;  // Mark as table
+          break;
+        case 'radar':
+          chartInstance = new Chart(canvas, {
+            type: 'radar',
+            data: chartDataFormatted,
+            options: options
+          });
+          break;
+        case 'polar':
+          chartInstance = new Chart(canvas, {
+            type: 'polarArea',
+            data: chartDataFormatted,
+            options: options
+          });
+          break;
+        case 'bubble':
+          // IMPROVED: Special handling for Asset Value Analysis bubble chart
+          chartInstance = new Chart(canvas, {
+            type: 'bubble',
+            data: chartDataFormatted,
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Category'
+                  },
+                  ticks: {
+                    callback: function(value, index) {
+                      return chartDataFormatted.labels[index];
+                    },
+                    stepSize: 1,
+                    autoSkip: false
+                  }
+                },
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Total Cost'
+                  },
+                  // ADDED: This ensures there's room at the top for large values
+                  grace: '15%',
+                  // NEW: Add max value calculation with padding
+                  suggestedMax: function() {
+                    if (chartDataFormatted && chartDataFormatted.datasets && chartDataFormatted.datasets[0]) {
+                      const maxY = Math.max(...chartDataFormatted.datasets[0].data.map(d => d.y));
+                      return maxY * 1.2; // Add 20% padding
+                    }
+                    return null;
+                  }()
+                }
+              },
+              plugins: {
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      const label = chartDataFormatted.labels[context.parsed.x];
+                      const cost = context.parsed.y;
+                      const count = context.dataset.data[context.dataIndex].r / 5;
+                      return `${label}: ₹${cost} (${count} assets)`;
+                    }
+                  }
+                },
+                // ADDED: Display title properly
+                title: {
+                  display: true,
+                  text: chartTitle,
+                  color: titleColor,
+                  font: {
+                    size: parseInt(titleFontSize)
+                  }
+                },
+                legend: {
+                  display: showLegend,
+                  position: legendPosition
+                }
+              }
+            }
+          });
+          break;
+        case 'horizontalBar':
+          chartInstance = new Chart(canvas, {
+            type: 'bar',
+            data: chartDataFormatted,
+            options: {
+              ...options,
+              indexAxis: 'y'
+            }
+          });
+          break;
+        case 'stacked':
+          chartInstance = new Chart(canvas, {
+            type: 'bar',
+            data: chartDataFormatted,
+            options: options
+          });
+          break;
+        case 'scatter':
+          chartInstance = new Chart(canvas, {
+            type: 'scatter',
+            data: chartDataFormatted,
+            options: options
+          });
+          break;
+        case 'area':
+          chartInstance = new Chart(canvas, {
+            type: 'line',
+            data: chartDataFormatted,
+            options: {
+              ...options,
+              elements: {
+                line: {
+                  tension: 0.4,
+                  fill: true
+                }
+              }
+            }
+          });
+          break;
+      
+        case 'gauge':
+          // For gauge charts (implemented as doughnut with special options)
+          chartInstance = new Chart(canvas, {
+            type: 'doughnut',
+            data: chartDataFormatted,
+            options: {
+              ...options,
+              circumference: 180,
+              rotation: 270,
+              cutout: '70%',
+              plugins: {
+                ...options.plugins,
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      return context.dataset.data[0] + '% Utilized';
+                    }
+                  }
+                }
+              }
+            }
+          });
+          break;
+        default:
+          // Fallback to bar chart if type is unknown
+          chartInstance = new Chart(canvas, {
+            type: 'bar',
+            data: chartDataFormatted,
+            options: options
+          });
+      }
+      
+      // Store chart instance for updating later
+      container._chart = chartInstance;
+    })
+    .catch(error => {
+      console.error('Error fetching chart data:', error);
+      // Optional: Display an error message in the chart container
+      container.innerHTML = `<p>Error loading chart: ${error.message}</p>`;
+    });
+}
+
+// Setup PDF download functionality
+document.getElementById('download-report').addEventListener('click', function() {
+  // Show downloading message
+  const loadingMessage = document.createElement('div');
+  loadingMessage.textContent = 'Generating PDF...';
+  loadingMessage.style.position = 'fixed';
+  loadingMessage.style.top = '50%';
+  loadingMessage.style.left = '50%';
+  loadingMessage.style.transform = 'translate(-50%, -50%)';
+  loadingMessage.style.backgroundColor = 'rgba(52, 152, 219, 0.9)';
+  loadingMessage.style.color = 'white';
+  loadingMessage.style.padding = '20px';
+  loadingMessage.style.borderRadius = '5px';
+  loadingMessage.style.zIndex = '1000';
+  document.body.appendChild(loadingMessage);
+  
+  // Temporarily hide actions bar and sidebar for clean capture
+  document.getElementById('actions-bar').style.display = 'none';
+  const sidebarState = document.getElementById('sidebar').classList.contains('collapsed');
+  document.getElementById('sidebar').classList.add('collapsed');
+  document.getElementById('report-area').classList.add('fullscreen');
+  
+  // Use setTimeout to allow the UI to update before capturing
+  setTimeout(() => {
+    const reportArea = document.getElementById('report-area');
+    
+    // Define PDF options
+    const pdfOptions = {
+      margin: 10,
+      filename: 'Asset-Management-Report.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    // Use html2canvas to capture the report area
+    html2canvas(reportArea, { scale: 2, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      
+      // Initialize jsPDF
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      // Calculate dimensions
+      const imgWidth = 210 - 20; // A4 width minus margins
+      const pageHeight = 297;  // A4 height
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 10; // Starting position
+      
+      // Add first page
+      pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight - 20; // 20mm margins
+      
+      // Add additional pages if needed
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight + 10;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight - 20;
+      }
+      
+      // Save the PDF
+      pdf.save('Asset-Management-Report.pdf');
+      
+      // Restore UI
+      document.getElementById('actions-bar').style.display = 'flex';
+      if (!sidebarState) {
+        document.getElementById('sidebar').classList.remove('collapsed');
+        document.getElementById('report-area').classList.remove('fullscreen');
+      }
+      
+      // Remove loading message
+      document.body.removeChild(loadingMessage);
+    });
+  }, 500);
+});
+
+
+// Add this to your existing JavaScript code
+
+// Add click handlers to widgets
+document.querySelectorAll('.widget').forEach(widget => {
+  widget.addEventListener('click', function() {
+    const type = this.getAttribute('data-type');
+    const title = this.querySelector('h3').innerText;
+    addChartToReport(type, title);
+  });
+});
+
+// Function to add chart at next available position
+function addChartToReport(type, title) {
+  const reportArea = document.getElementById('report-area');
+  const newItem = createChartItem(type, title);
+  
+  // Calculate position based on existing items
+  const items = reportArea.querySelectorAll('.report-item');
+  let lastItem = items[items.length - 1];
+  
+  if (reportArea.classList.contains('tile-mode')) {
+    // Tile mode - just append, CSS will handle positioning
+    reportArea.appendChild(newItem);
+  } else {
+    // Free layout mode - stack vertically
+    let top = 20;
+    if (lastItem) {
+      const lastRect = lastItem.getBoundingClientRect();
+      top = lastRect.top + lastRect.height + 20 - reportArea.getBoundingClientRect().top;
+    }
+    
+    newItem.style.left = '20px';
+    newItem.style.top = `${top}px`;
+    reportArea.appendChild(newItem);
+  }
+
+  // Initialize chart and interactions
+  renderChart(type, newItem.querySelector('.chart-container'));
+  makeResizable(newItem);
+  if (!reportArea.classList.contains('tile-mode')) {
+    makeDraggable(newItem);
+  }
+}
+
+// Helper function to create chart item
+function createChartItem(type, title) {
+  const newItem = document.createElement('div');
+  newItem.classList.add('report-item');
+  newItem.setAttribute('data-chart-type', type);
+  newItem.style.width = '400px';
+  newItem.style.height = '300px';
+  newItem.style.position = 'absolute'; // Make sure position is set for free layout
+  
+  // Include chart-specific controls based on type
+  let additionalControls = '';
+  if (type === 'bubble') {
+    additionalControls = `
+      <select class="value-scale-selector" title="Value Scale">
+        <option value="normal">Normal Scale</option>
+        <option value="logarithmic">Log Scale</option>
+        <option value="compact">Compact Values</option>
+      </select>
+    `;
+  }
+  
+  newItem.innerHTML = `
+    <div class="widget-handle">${title}</div>
+    <div class="chart-controls">
+      ${additionalControls}
+    </div>
+    <div class="chart-container" style="width:100%; height:calc(100% - 30px);"></div>
+    <div class="widget-resize"></div>
+    <button class="format-btn" title="Format Chart">⚙️</button>
+    <button class="delete-btn" title="Delete Chart">X</button>
+  `;
+  
+  // Add delete functionality
+  newItem.querySelector('.delete-btn').addEventListener('click', function() {
+    newItem.remove();
+  });
+  
+  // Add format functionality
+  newItem.querySelector('.format-btn').addEventListener('click', function() {
+    openFormatModal(newItem);
+  });
+  
+  // Add special handlers for bubble chart
+  if (type === 'bubble') {
+    const scaleSelector = newItem.querySelector('.value-scale-selector');
+    if (scaleSelector) {
+      scaleSelector.addEventListener('change', function() {
+        const value = this.value;
+        const chartContainer = newItem.querySelector('.chart-container');
+        
+        // Apply different scale options
+        if (chartContainer && chartContainer._chart) {
+          const chart = chartContainer._chart;
+          
+          if (value === 'logarithmic') {
+            // Set logarithmic scale for y-axis
+            chart.options.scales.y.type = 'logarithmic';
+          } else if (value === 'compact') {
+            // Use compact formatting for large numbers
+            chart.options.scales.y.type = 'linear';
+            chart.options.scales.y.ticks = {
+              callback: function(value) {
+                if (value >= 1000000) {
+                  return (value / 1000000).toFixed(1) + 'M';
+                } else if (value >= 1000) {
+                  return (value / 1000).toFixed(1) + 'k';
+                }
+                return value;
+              }
+            };
+          } else {
+            // Normal linear scale
+            chart.options.scales.y.type = 'linear';
+            chart.options.scales.y.ticks = {
+              autoSkip: true,
+              maxTicksLimit: 10
+            };
+          }
+          
+          chart.update();
+        }
+      });
+    }
+  }
+  
+  return newItem;
+}
+
+$(document).ready(function() {
+  // Add window resize handler to update all charts
+  let resizeTimer;
+  $(window).on('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() {
+      const reportArea = document.getElementById('report-area');
+      if (reportArea.classList.contains('tile-mode')) {
+        // In tile mode, force charts to update on window resize
+        updateAllCharts();
+      }
+    }, 250);
+  });
+});
+// Add these functions to your existing JavaScript code
+function saveReportAsJson() {
+  const reportArea = document.getElementById('report-area');
+  // Select ALL report items (both charts and headings use this class)
+  const reportItems = reportArea.querySelectorAll('.report-item');
+  const reportData = {
+    backgroundColor: reportArea.style.backgroundColor || '',
+    layout: reportArea.classList.contains('tile-mode') ? 'tile' : 'free',
+    items: []
+  };
+
+  // Extract data from each report item
+  reportItems.forEach(item => { // 'item' is defined here for each iteration
+    const isHeading = item.classList.contains('heading-item');
+    const rect = item.getBoundingClientRect();
+    const reportRect = reportArea.getBoundingClientRect();
+
+    if (isHeading) {
+      // Handle heading item
+      reportData.items.push({
+        type: 'heading',
+        text: item.querySelector('h2').innerText, // Get text from the h2 inside
+        position: {
+           // Use inline style first, fallback to calculated position
+          left: parseInt(item.style.left) || (rect.left - reportRect.left),
+          top: parseInt(item.style.top) || (rect.top - reportRect.top)
+        },
+        width: item.offsetWidth,
+        height: item.offsetHeight
+      });
+    } else {
+      // Handle chart item (assuming it's not a heading, it's a chart)
+      const chartType = item.getAttribute('data-chart-type');
+      const title = item.querySelector('.widget-handle').innerText;
+
+      // Gather all formatting attributes
+      const formatting = {
+        title: item.getAttribute('data-title') || title,
+        titleColor: item.getAttribute('data-title-color') || '#2c3e50',
+        titleSize: item.getAttribute('data-title-size') || '16',
+        showLegend: item.getAttribute('data-show-legend') || 'true',
+        legendPosition: item.getAttribute('data-legend-position') || 'top',
+        colorScheme: item.getAttribute('data-color-scheme') || 'default',
+        backgroundColor: item.getAttribute('data-background') || '#ffffff'
+      };
+
+      // Create chart item data object
+      const chartData = {
+        type: chartType,
+        title: title,
+        width: item.offsetWidth,
+        height: item.offsetHeight,
+        position: {
+          // Use inline style first, fallback to calculated position
+          left: parseInt(item.style.left) || (rect.left - reportRect.left),
+          top: parseInt(item.style.top) || (rect.top - reportRect.top)
+        },
+        formatting: formatting
+      };
+
+      reportData.items.push(chartData);
+    }
+  });
+
+  // REMOVED the separate heading loop as it's now handled above.
+
+  // Convert to JSON string
+  return JSON.stringify(reportData, null, 2);
+}
+
+
+// Function to load a report from JSON
+function loadReportFromJson(jsonData) {
+  try {
+    const reportData = JSON.parse(jsonData);
+    const reportArea = document.getElementById('report-area');
+
+    // Clear existing report items
+    reportArea.querySelectorAll('.report-item').forEach(el => el.remove()); // Clear all items
+
+    // Set report background color
+    if (reportData.backgroundColor) {
+      reportArea.style.backgroundColor = reportData.backgroundColor;
+      // Update color selector to match
+      const bgColorSelect = document.getElementById('bg-color');
+      if (bgColorSelect) {
+        const predefinedColors = Array.from(bgColorSelect.options).map(opt => opt.value);
+        if (predefinedColors.includes(reportData.backgroundColor)) {
+          bgColorSelect.value = reportData.backgroundColor;
+          document.getElementById('custom-color').style.display = 'none'; // Hide custom picker
+        } else if (reportData.backgroundColor) { // Check if there IS a background color
+          bgColorSelect.value = 'custom';
+          document.getElementById('custom-color').value = reportData.backgroundColor;
+          document.getElementById('custom-color').style.display = 'inline-block';
+        } else { // No background color defined
+            bgColorSelect.value = 'default';
+            document.getElementById('custom-color').style.display = 'none';
+        }
+      }
+    } else {
+         reportArea.style.backgroundColor = ''; // Reset if not in JSON
+         document.getElementById('bg-color').value = 'default';
+         document.getElementById('custom-color').style.display = 'none';
+    }
+
+    // Set layout mode
+    if (reportData.layout === 'tile') {
+      document.getElementById('tile-layout').click();
+    } else {
+      document.getElementById('free-layout').click();
+    }
+
+    // Create each item
+    reportData.items.forEach(item => {
+      if (item.type === 'heading') {
+        // Add heading - Use the same structure as adding manually
+        const headingElement = document.createElement('div'); // Create the container div
+        headingElement.className = 'report-item heading-item'; // Add classes
+        headingElement.innerHTML = `
+          <h2>${item.text}</h2>
+          <button class="delete-btn" title="Delete Heading">×</button>
+        `;
+        // Set position and size on the container div
+        headingElement.style.width = `${item.width || 300}px`; // Default width if missing
+        headingElement.style.height = `${item.height || 40}px`; // Default height if missing
+        headingElement.style.position = 'absolute'; // Set explicitly for free layout
+        headingElement.style.left = `${item.position.left}px`;
+        headingElement.style.top = `${item.position.top}px`;
+
+        reportArea.appendChild(headingElement); // Add the container div
+        adjustHeadingFontSize(headingElement); // Adjust font size
+
+        // Initialize interactions
+        makeResizable(headingElement); // Make resizable first
+        if (reportData.layout !== 'tile') { // Only draggable in free layout
+            makeDraggable(headingElement);
+        } else {
+            $(headingElement).draggable('disable'); // Ensure it's disabled if tile mode
+            headingElement.style.position = 'relative'; // Override absolute for tile
+            headingElement.style.left = 'auto';
+            headingElement.style.top = 'auto';
+        }
+
+
+        // Add delete listener (important for loaded items)
+        headingElement.querySelector('.delete-btn').addEventListener('click', function() {
+          headingElement.remove();
+        });
+
+      } else {
+        // Create chart item (existing logic is mostly correct)
+        const newItem = createChartItem(item.type, item.title);
+
+        // Set position and size
+        newItem.style.width = `${item.width || 400}px`; // Default if missing
+        newItem.style.height = `${item.height || 300}px`; // Default if missing
+
+        // Apply formatting attributes BEFORE rendering chart
+        if (item.formatting) {
+          Object.keys(item.formatting).forEach(key => {
+            // Convert camelCase key from JSON (e.g., titleSize) to kebab-case attribute (e.g., data-title-size)
+            const attributeName = `data-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+            newItem.setAttribute(attributeName, item.formatting[key]);
+          });
+          // Ensure the handle text matches the saved title if it exists
+          if (item.formatting.title) {
+            newItem.querySelector('.widget-handle').innerText = item.formatting.title;
+          }
+        }
+
+        reportArea.appendChild(newItem);
+
+        // Initialize chart and interactions
+        makeResizable(newItem); // Make resizable first
+
+        // Set position AFTER appending and making resizable, but BEFORE rendering chart
+        if (reportData.layout !== 'tile') {
+          newItem.style.position = 'absolute';
+          newItem.style.left = `${item.position.left}px`;
+          newItem.style.top = `${item.position.top}px`;
+          makeDraggable(newItem); // Only draggable in free layout
+        } else {
+            $(newItem).draggable('disable'); // Ensure draggable is off
+            newItem.style.position = 'relative'; // Tile mode doesn't use absolute
+            newItem.style.left = 'auto';
+            newItem.style.top = 'auto';
+        }
+
+        // Render the chart LAST, after element is in DOM and sized/positioned
+        renderChart(item.type, newItem.querySelector('.chart-container'));
+
+      }
+    });
+
+     // If tile mode was loaded, make the area sortable *after* adding items
+     if (reportData.layout === 'tile') {
+          $('#report-area').sortable({
+              items: '.report-item',
+              placeholder: 'sortable-placeholder',
+              tolerance: 'pointer'
+          }).sortable('enable'); // Ensure it's enabled
+      } else {
+          // If free layout, ensure sortable is disabled
+          if ($('#report-area').data('ui-sortable')) {
+               $('#report-area').sortable('disable');
+          }
+      }
+
+
+    return true;
+  } catch (error) {
+    console.error('Error loading report from JSON:', error);
+    alert('Error loading report. Please check the JSON data and console for details.'); // Provide user feedback
+    return false;
+  }
+}
+
+// Add UI elements for save/load functionality
+function setupSaveLoadControls() {
+  // Create save button
+  const saveButton = document.createElement('button');
+  saveButton.id = 'save-report-json';
+  saveButton.textContent = 'Save Report (JSON)';
+  saveButton.title = 'Save report configuration as JSON';
+  saveButton.style.backgroundColor = '#9b59b6';
+  
+  // Create load button
+  const loadButton = document.createElement('button');
+  loadButton.id = 'load-report-json';
+  loadButton.textContent = 'Load Report (JSON)';
+  loadButton.title = 'Load report configuration from JSON';
+  loadButton.style.backgroundColor = '#9b59b6';
+  
+  // Add buttons to actions bar
+  const actionsBar = document.getElementById('actions-bar');
+  actionsBar.insertBefore(loadButton, actionsBar.firstChild);
+  actionsBar.insertBefore(saveButton, actionsBar.firstChild);
+  
+  // Create save modal
+  const saveModal = document.createElement('div');
+  saveModal.id = 'saveModal';
+  saveModal.className = 'modal';
+  saveModal.innerHTML = `
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Save Report Configuration</h2>
+      <p>Copy this JSON or download it to save your report configuration:</p>
+      <textarea id="json-output" style="width: 100%; height: 200px; margin-bottom: 15px; font-family: monospace;"></textarea>
+      <div class="format-actions">
+        <button id="copy-json">Copy to Clipboard</button>
+        <button id="download-json">Download JSON File</button>
+      </div>
+    </div>
+  `;
+  
+  // Create load modal
+  const loadModal = document.createElement('div');
+  loadModal.id = 'loadModal';
+  loadModal.className = 'modal';
+  loadModal.innerHTML = `
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Load Report Configuration</h2>
+      <p>Paste JSON or upload a file to load a saved report configuration:</p>
+      <textarea id="json-input" style="width: 100%; height: 200px; margin-bottom: 15px; font-family: monospace;" placeholder="Paste JSON here..."></textarea>
+      <div class="format-actions">
+        <input type="file" id="json-file-input" accept=".json" style="display: none;">
+        <button id="upload-json">Upload JSON File</button>
+        <button id="apply-json">Load Report</button>
+      </div>
+    </div>
+  `;
+  
+  // Add modals to the document
+  document.body.appendChild(saveModal);
+  document.body.appendChild(loadModal);
+  
+  // Add event listeners
+  
+  // Save button
+  saveButton.addEventListener('click', function() {
+    const jsonOutput = document.getElementById('json-output');
+    jsonOutput.value = saveReportAsJson();
+    document.getElementById('saveModal').style.display = 'block';
+  });
+  
+  // Load button
+  loadButton.addEventListener('click', function() {
+    document.getElementById('loadModal').style.display = 'block';
+  });
+  
+  // Close buttons for modals
+  document.querySelectorAll('.modal .close').forEach(closeBtn => {
+    closeBtn.addEventListener('click', function() {
+      this.closest('.modal').style.display = 'none';
+    });
+  });
+  
+  // Copy to clipboard button
+  document.getElementById('copy-json').addEventListener('click', function() {
+    const jsonOutput = document.getElementById('json-output');
+    jsonOutput.select();
+    document.execCommand('copy');
+    this.textContent = 'Copied!';
+    setTimeout(() => {
+      this.textContent = 'Copy to Clipboard';
+    }, 2000);
+  });
+  
+  // Download JSON file button
+  document.getElementById('download-json').addEventListener('click', function() {
+    const jsonData = document.getElementById('json-output').value;
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'asset-report-config.json';
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  });
+  
+  // Upload JSON file button
+  document.getElementById('upload-json').addEventListener('click', function() {
+    document.getElementById('json-file-input').click();
+  });
+  
+  // File input change handler
+  document.getElementById('json-file-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        document.getElementById('json-input').value = event.target.result;
+      };
+      reader.readAsText(file);
+    }
+  });
+  
+  // Apply JSON button
+  document.getElementById('apply-json').addEventListener('click', function() {
+    const jsonInput = document.getElementById('json-input').value.trim();
+    if (jsonInput) {
+      if (loadReportFromJson(jsonInput)) {
+        document.getElementById('loadModal').style.display = 'none';
+        // Show success message
+        const successMessage = document.createElement('div');
+        successMessage.textContent = 'Report loaded successfully!';
+        successMessage.style.position = 'fixed';
+        successMessage.style.top = '50%';
+        successMessage.style.left = '50%';
+        successMessage.style.transform = 'translate(-50%, -50%)';
+        successMessage.style.backgroundColor = 'rgba(46, 204, 113, 0.9)';
+        successMessage.style.color = 'white';
+        successMessage.style.padding = '20px';
+        successMessage.style.borderRadius = '5px';
+        successMessage.style.zIndex = '1000';
+        document.body.appendChild(successMessage);
+        setTimeout(() => {
+          document.body.removeChild(successMessage);
+        }, 2000);
+      } else {
+        alert('Error loading report. Please check the JSON format.');
+      }
+    } else {
+      alert('Please enter or upload JSON data.');
+    }
+  });
+  
+  // Close modals when clicking outside
+  window.addEventListener('click', function(event) {
+    if (event.target.className === 'modal') {
+      event.target.style.display = 'none';
+    }
+  });
+}
+
+// Initialize save/load functionality when document is ready
+document.addEventListener('DOMContentLoaded', function() {
+  setupSaveLoadControls();
+});
+
+document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
+
+function toggleFullscreen() {
+  const reportArea = document.getElementById('report-area');
+  
+  if (!document.fullscreenElement) {
+    if (reportArea.requestFullscreen) {
+      reportArea.requestFullscreen();
+    } else if (reportArea.webkitRequestFullscreen) { /* Safari */
+      reportArea.webkitRequestFullscreen();
+    } else if (reportArea.msRequestFullscreen) { /* IE11 */
+      reportArea.msRequestFullscreen();
+    }
+    document.getElementById('fullscreen-btn').textContent = 'Exit Fullscreen';
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) { /* Safari */
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) { /* IE11 */
+      document.msExitFullscreen();
+    }
+    document.getElementById('fullscreen-btn').textContent = 'Enter Fullscreen';
+  }
+}
+
+// Handle fullscreen change events
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    document.getElementById('fullscreen-btn').textContent = 'Enter Fullscreen';
+  }
+});
+
+document.addEventListener('webkitfullscreenchange', () => {
+  if (!document.webkitIsFullScreen) {
+    document.getElementById('fullscreen-btn').textContent = 'Enter Fullscreen';
+  }
+});
+
+function adjustHeadingFontSize(headingElement) {
+  const h2 = headingElement.querySelector('h2');
+  const container = headingElement;
+  
+  // Reset to base size for calculation
+  h2.style.fontSize = '24px';
+  
+  // Get dimensions
+  const textWidth = h2.scrollWidth;
+  const textHeight = h2.scrollHeight;
+  const containerWidth = container.offsetWidth - 24; // Account for padding
+  const containerHeight = container.offsetHeight;
+
+  // Calculate scale factors
+  const widthScale = containerWidth / textWidth;
+  const heightScale = containerHeight / textHeight;
+  const scale = Math.min(widthScale, heightScale, 1); // Don't scale above 1
+
+  // Apply new font size
+  const newSize = Math.floor(24 * scale);
+  h2.style.fontSize = `${Math.max(newSize, 12)}px`; // Minimum 12px
+}
+</script>
+</body>
+</html>

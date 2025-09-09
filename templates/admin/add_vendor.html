@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Vendor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #1e40af; /* Header text color */
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #1e40af; /* Label text color - updated to deep blue */
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group textarea {
+            resize: vertical;
+            height: 80px;
+        }
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #1e40af; /* Primary button color */
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+        }
+        .submit-btn:hover {
+            background-color: #162d79; /* Darker shade on hover */
+        }
+        .cancel-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #ccc;
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease; /* Smooth hover effect */
+        }
+        .cancel-btn:hover {
+            background-color: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Add Custom Vendor</h2>
+        <form method="POST" action="{% url 'add_vendor' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="vendorName">Vendor Name</label>
+                <input type="text" id="vendorName" name="vendorName" placeholder="Enter vendor name" required>
+            </div>
+            <div class="form-group">
+                <label for="vendorBgswId">BGSW Vendor ID</label>
+                <input type="text" id="vendorBgswId" name="vendorBgswId" placeholder="Enter BGSW vendor id" required>
+            </div>
+            <div class="form-group">
+                <label for="vendorContact">Vendor Contact</label>
+                <input type="text" id="vendorContact" name="vendorContact" placeholder="Enter vendor contact details" required>
+            </div>
+            <div class="form-group">
+                <label for="vendorNotes">Vendor Notes (Optional)</label>
+                <textarea id="vendorNotes" name="vendorNotes" placeholder="Enter additional notes about the vendor"></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Save Vendor</button>
+            <button type="button" class="cancel-btn" onclick="closeWindow()">Cancel</button>
+    </div>
+    <script>
+        function closeWindow() {
+    // Check if the window was opened via JavaScript
+    if (window.opener) {
+        window.close(); // Close the window if it was opened by JavaScript
+    } else {
+        alert("This window cannot be closed automatically. Please close it manually.");
+    }
+}
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+    
+            form.addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevent default form submission
+    
+                // Collect form data
+                const formData = new FormData(form);
+    
+                // Send the data to the server using fetch
+                fetch("{% url 'add_vendor' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for Django
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // If the response is successful, show a styled success message
+                        response.text().then(message => {
+                            // Clear the form content and show the success message in green
+                            document.body.innerHTML = `
+                                <div style="text-align: center; margin-top: 50px;">
+                                    <h2 style="color: green;">${message}</h2>
+                                </div>
+                            `;
+    
+                            // Close the window after 2 seconds
+                            setTimeout(closeWindow, 500);
+                        });
+                    } else {
+                        // If the response indicates an error, show the error message
+                        response.text().then(error => {
+                            alert(`Error: ${error}`);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while saving the vendor.');
+                });
+            });
+    
+        });
+    </script>
+</body>
+</html>

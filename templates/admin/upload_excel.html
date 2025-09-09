@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Asset Excel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"  rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script> 
+    <style>
+        /* Global Styles */
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #1e40af;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #1e40af;
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: color 0.3s ease;
+        }
+        .back-button:hover {
+            color: #1e3a8a;
+        }
+        .upload-box {
+            border: 2px dashed #d1d5db;
+            padding: 40px 20px;
+            text-align: center;
+            background-color: #fafafa;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+        .upload-box:hover {
+            border-color: #1e40af;
+            background-color: #f0f5ff;
+        }
+        .upload-icon {
+            font-size: 50px;
+            color: #1e40af;
+            margin-bottom: 15px;
+        }
+        .text-small {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        .file-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0f5ff;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-info span {
+            font-size: 0.9rem;
+            color: #374151;
+        }
+        .btn-primary {
+            background-color: #1e40af;
+            border: none;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #1e3a8a;
+        }
+        .error-details {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .table-sm th,
+        .table-sm td {
+            font-size: 0.9rem;
+        }
+        .instructions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .instructions-table th,
+        .instructions-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        .instructions-table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .instructions-table tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        /* Progress Bar Styles */
+        .progress-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+        .progress-text {
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #1e40af;
+        }
+        .progress {
+            height: 25px;
+            background-color: #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .processing-icon {
+            font-size: 20px;
+            color: #1e40af;
+            margin-right: 10px;
+            animation: spin 1s linear infinite;
+        }
+        .error-icon {
+            font-size: 20px;
+            color: #ef4444;
+            margin-right: 10px;
+        }
+        .bg-danger {
+            background-color: #ef4444 !important;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .success-message {
+            text-align: center;
+            padding: 20px;
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .success-icon {
+            font-size: 50px;
+            color: #22c55e;
+            margin-bottom: 15px;
+        }
+        .redirect-text {
+            color: #374151;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Back Button -->
+        <a href="{% url 'Add Asset' %}" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back to Add Asset
+        </a>
+        <h1>Upload Asset Excel File</h1>
+
+        <!-- Upload Form -->
+        <div id="upload-section">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Required Columns</h5>
+                    <p>Please ensure your Excel file contains the following columns:</p>
+                    <table class="instructions-table">
+                        <tr>
+                            <td>Asset Bond Type</td>
+                            <td>Asset Name</td>
+                            <td>Category</td>
+                        </tr>
+                        <tr>
+                            <td>Model</td>
+                            <td>Specification</td>
+                            <td>Asset Number</td>
+                        </tr>
+                        <tr>
+                            <td>Serial Number</td>
+                            <td>Part Number</td>
+                            <td>Asset Type</td>
+                        </tr>
+                        <tr>
+                            <td>Asset Status</td>
+                            <td>Item Floor</td>
+                            <td>Storage Location</td>
+                        </tr>
+                        <tr>
+                            <td>Rack Number</td>
+                            <td>Storage Type</td>
+                            <td>Location</td>
+                        </tr>
+                        <tr>
+                            <td>Asset Provider</td>
+                            <td>Classification</td>
+                            <td>Purchase Date</td>
+                        </tr>
+                        <tr>
+                            <td>Cost</td>
+                            <td>Warranty</td>
+                            <td>Vendor</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <form method="POST" enctype="multipart/form-data" id="upload-form">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <div class="upload-box" id="upload-area">
+                        <div class="upload-icon">
+                            <i class="fas fa-file-upload"></i>
+                        </div>
+                        <h4>Drag & Drop Excel File Here</h4>
+                        <p class="text-muted text-small">Or click to select file</p>
+                        <input type="file" name="excel_file" id="file-input" accept=".xlsx,.xls" class="d-none">
+                    </div>
+                    <div id="file-info" class="mt-2 d-none">
+                        <div class="file-info">
+                            <span id="file-name" class="me-auto"></span>
+                            <button type="button" class="btn-close" id="remove-file"></button>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="submit-btn" disabled>Upload and Process</button>
+            </form>
+        </div>
+
+        <!-- Progress Section -->
+        <div id="progress-section" class="d-none">
+            <div class="progress-container">
+                <div class="progress-text">
+                    <i class="fas fa-cog processing-icon"></i>
+                    <span id="progress-message">Processing your Excel file...</span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" id="progress-bar" role="progressbar" style="width: 0%">
+                        <span id="progress-percentage">0%</span>
+                    </div>
+                </div>
+                <div class="text-center text-muted">
+                    <small>Please wait while we import your assets...</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Section -->
+        <div id="success-section" class="d-none">
+            <div class="success-message">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h4>Upload Successful!</h4>
+                <p>Your Excel file has been processed successfully.</p>
+                <div class="redirect-text">
+                    <i class="fas fa-arrow-right"></i>
+                    Redirecting to Asset Inventory in <span id="countdown">3</span> seconds...
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Messages -->
+        {% if messages %}
+        <div class="mt-4">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Import Errors -->
+        {% if import_errors %}
+        <div class="mt-5">
+            <h3>Import Errors</h3>
+            <div class="alert alert-danger">
+                <p>The following rows could not be imported:</p>
+                <div class="error-details">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Row #</th>
+                                <th>Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for error in import_errors %}
+                            <tr>
+                                <td>{{ error.row }}</td>
+                                <td>{{ error.error }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-input');
+            const fileInfo = document.getElementById('file-info');
+            const fileName = document.getElementById('file-name');
+            const removeFile = document.getElementById('remove-file');
+            const submitBtn = document.getElementById('submit-btn');
+            const uploadForm = document.getElementById('upload-form');
+            const uploadSection = document.getElementById('upload-section');
+            const progressSection = document.getElementById('progress-section');
+            const successSection = document.getElementById('success-section');
+            const progressBar = document.getElementById('progress-bar');
+            const progressPercentage = document.getElementById('progress-percentage');
+            const progressMessage = document.getElementById('progress-message');
+
+            let progressInterval;
+            let uploadComplete = false;
+
+            // Drag & drop handlers
+            uploadArea.addEventListener('dragover', e => {
+                e.preventDefault();
+                uploadArea.classList.add('border-primary');
+            });
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('border-primary');
+            });
+            uploadArea.addEventListener('drop', e => {
+                e.preventDefault();
+                uploadArea.classList.remove('border-primary');
+                if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+            });
+
+            // Click to upload
+            uploadArea.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length) handleFiles(fileInput.files);
+            });
+
+            // Remove file
+            removeFile.addEventListener('click', () => {
+                fileInput.value = '';
+                fileInfo.classList.add('d-none');
+                submitBtn.disabled = true;
+            });
+
+            // Handle files
+            function handleFiles(files) {
+                const file = files[0];
+                const extension = file.name.split('.').pop().toLowerCase();
+                if (!['xlsx', 'xls'].includes(extension)) {
+                    alert('Please select an Excel file (.xlsx or .xls)');
+                    return;
+                }
+                fileName.textContent = file.name;
+                fileInfo.classList.remove('d-none');
+                submitBtn.disabled = false;
+            }
+
+            // Submit form
+            uploadForm.addEventListener('submit', e => {
+                e.preventDefault();
+                uploadSection.classList.add('d-none');
+                progressSection.classList.remove('d-none');
+                startProgress();
+                submitForm();
+            });
+
+            function startProgress() {
+                let progress = 0;
+                const messages = [
+                    "Reading Excel file...",
+                    "Validating data...",
+                    "Processing assets...",
+                    "Saving to database...",
+                    "Finalizing import..."
+                ];
+                progressInterval = setInterval(() => {
+                    if (uploadComplete) return clearInterval(progressInterval);
+                    progress += Math.random() * 10 + 2;
+                    if (progress >= 90 && !uploadComplete) progress = 90;
+                    progressBar.style.width = progress + '%';
+                    progressPercentage.textContent = Math.round(progress) + '%';
+                    const messageIndex = Math.min(Math.floor(progress / 20), messages.length - 1);
+                    progressMessage.textContent = messages[messageIndex];
+                }, 500);
+            }
+
+            function completeProgress(success = true) {
+                uploadComplete = true;
+                clearInterval(progressInterval);
+                if (success) {
+                    progressBar.style.width = '100%';
+                    progressPercentage.textContent = '100%';
+                    progressMessage.textContent = 'Import completed successfully!';
+                    setTimeout(showSuccess, 1000);
+                }
+            }
+
+            function showError(errorMessage) {
+                uploadComplete = true;
+                clearInterval(progressInterval);
+                progressMessage.innerHTML = '<i class="fas fa-exclamation-triangle error-icon"></i>' + errorMessage;
+                progressBar.style.backgroundColor = '#ef4444';
+                progressBar.classList.add('bg-danger');
+                const retryBtn = document.createElement('button');
+                retryBtn.className = 'btn btn-primary mt-3';
+                retryBtn.textContent = 'Try Again';
+                retryBtn.onclick = () => location.reload();
+                progressSection.appendChild(retryBtn);
+            }
+
+            function submitForm() {
+                const formData = new FormData(uploadForm);
+                fetch(uploadForm.action || window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => {
+                    if (response.status === 500) throw new Error('Server error occurred during processing');
+                    return response.text();
+                })
+                .then(data => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data, 'text/html');
+                    const hasError = doc.querySelector('.alert-danger') || doc.body.innerText.includes('duplicate key row');
+                    const hasSuccess = doc.querySelector('.alert-success');
+
+                    if (hasError) {
+                        showError('Upload failed. Please check your file and try again.');
+                        setTimeout(() => document.body.innerHTML = data, 3000);
+                    } else if (hasSuccess) {
+                        completeProgress(true);
+                    } else {
+                        showError('Unknown error occurred.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during upload:', error);
+                    showError('Upload failed: ' + error.message);
+                });
+            }
+
+            function showSuccess() {
+                progressSection.classList.add('d-none');
+                successSection.classList.remove('d-none');
+                let countdown = 3;
+                const countdownElement = document.getElementById('countdown');
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    countdownElement.textContent = countdown;
+                    if (countdown <= 0) {
+                        window.location.href = "{% url 'Asset Inventory' %}";
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

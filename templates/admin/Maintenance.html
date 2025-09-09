@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Management - Maintenance</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #1e40af;
+            color: white;
+            padding: 2rem 0;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .logo {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .menu-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .menu-item:hover {
+            background: #1e3a8a;
+        }
+
+        .menu-item.active {
+            background: #1e3a8a;
+            border-left: 4px solid white;
+        }
+
+        .main-content {
+            flex: 1;
+            background: #f0f5ff;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between avatar and username */
+        }
+
+        .user-avatar {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background-color: #1e40af;
+            color: white;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .user-name {
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+        /* Logout Modal Background */
+        .logout-modal {
+            display: none; /* Modal should be hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Dark Overlay */
+            z-index: 1000;
+            display: flex; /* Flexbox layout to center the modal */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+        }
+
+        /* Logout Modal Box */
+        .logout-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Logout Modal Buttons */
+        .logout-modal-buttons {
+            margin-top: 15px;
+        }
+
+        .logout-btn {
+            background-color: #1e40af;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .logout-btn:hover {
+            background-color: #162d79;
+        }
+
+        .cancel-btn {
+            background-color: #ccc;
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel-btn:hover {
+            background-color: #bbb;
+        }
+
+        .maintenance-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        /* Sticky header styling */
+        #maintenanceTable thead th {
+            position: sticky;
+            top: 0; /* Stick to the top of the container */
+            background-color: #f4f4f4; /* Match the background color of the header */
+            z-index: 1; /* Ensure the header stays above the tbody content */
+            border-bottom: 2px solid #ddd; /* Add a border to separate the header from the body */
+        }
+
+        /* Optional: Add some padding and alignment for better readability */
+        #maintenanceTable th,
+        #maintenanceTable td {
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        /* Optional: Add hover effect for rows */
+        #maintenanceTable tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* Search box and filters styling */
+        .search-box {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            width: 250px;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus {
+            border-color: #1e40af;
+            box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.1);
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            background: white;
+            min-width: 150px;
+            outline: none;
+        }
+
+        .filter-select:focus {
+            border-color: #1e40af;
+            box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.6rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e40af;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+        th.ascending::after {
+            content: " ▲";
+        }
+
+        th.descending::after {
+            content: " ▼";
+        }
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-overdue {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .status-upcoming {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #22c55e;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #1e40af;
+            color: white;
+        }
+
+        .vendor-modal {
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .vendor-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .vendor-modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border: 1px solid #e0e0e0;
+            width: 70%;
+            max-width: 800px;
+            border-radius: 15px;
+            text-align: left;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            position: relative;
+            max-height: 80%;
+            overflow-y: auto;
+            transform: translateY(-50px);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .vendor-modal.show .vendor-modal-content {
+            transform: translateY(0);
+        }
+
+        .vendor-modal-header {
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            color: #0052cc;
+        }
+
+        .vendor-modal-body {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .vendor-modal-body p {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .vendor-modal-body strong {
+            margin-right: 10px;
+            min-width: 120px;
+            display: inline-block;
+        }
+
+        .vendor-close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: #ff4d4d;
+            font-size: 24px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .vendor-close-button:hover {
+            color: #ff0000;
+        }.alert-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 0.2rem 0.5rem;
+    background-color: #ef4444; /* Red background */
+    color: white; /* White text */
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 9999px; /* Fully rounded corners */
+    line-height: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="/media/assets/images/logo.svg" alt="Logo" style="width: 24px; height: 24px;">
+                <span>Asset Manager</span>
+              </div>
+            <a href="{% url 'dashboard' %}" class="menu-item">
+                <div>Dashboard</div>
+            </a>
+            <a href="{% url 'Asset Inventory' %}" class="menu-item">
+                <div>Asset Inventory</div>
+            </a>
+            <a href="{% url 'Add Asset' %}" class="menu-item">
+                <div>Add Asset</div>
+            </a>
+            <a href="{% url 'Alerts' %}" class="menu-item {% if request.resolver_match.url_name == 'Alerts' %}active{% endif %}">
+                <div>
+                    Alerts
+                    <!-- New Alert Badge -->
+                    {% if total_new_alerts > 0 %}
+                        <span class="alert-badge">{{ total_new_alerts }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            <a href="{% url 'MaintenancePage' %}" class="menu-item active ">
+                <div>Maintenance</div>
+            </a>
+            <a href="{% url 'asset_request_tracking' %}" class="menu-item">
+                <div>Asset Requests</div>
+            </a>
+            <a href="{% url 'Reports' %}" class="menu-item">
+                <div>Reports</div>
+            </a>
+            <a href="{% url 'user_management' %}" class="menu-item ">
+                <div>Users</div>
+            </a>
+        </div>
+        
+        <div class="main-content">
+            <div class="header">
+                <h1>Maintenance</h1>
+                <div class="user-info" onclick="openLogoutModal()">
+                    <span class="user-name">{{ user.username }}</span>
+                    <div class="user-avatar">
+                        {{ user.email.0|upper }}{{ user.email.1|lower }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Logout Pop-up Modal -->
+            <div id="logoutModal" class="logout-modal">
+                <div class="logout-modal-content">
+                    <p>Are you sure you want to logout?</p>
+                    <div class="logout-modal-buttons">
+                        <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                        <button onclick="closeLogoutModal()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <input type="text" placeholder="Search assets..." class="search-box" id="searchBox">
+                <select class="filter-select" id="categoryFilter">
+                    <option value="all">All Categories</option>
+                    {% for category in asset_categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+                <select class="filter-select" id="statusFilter">
+                    <option value="all">All Status</option>
+                    <option value="Overdue">Overdue</option>
+                    <option value="Upcoming">Upcoming</option>
+                </select>
+            </div>
+               
+            <div class="maintenance-table" style="max-height: 400px; overflow-y: auto;">
+                <table id="maintenanceTable">
+                    <thead>
+                        <tr>
+                            <th>Asset ID</th>
+                            <th>Asset Number</th>
+                            <th data-column="Category">Asset Category</th>
+                            <th>Last Maintenance</th>
+                            <th>Next Due</th>
+                            <th>Status</th>
+                            <th data-column="VendorName">Vendor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asset in assets %}
+                        <tr>
+                            <td>{{ asset.AssetID }}</td>
+                            <td>{{ asset.AssetNumber }}</td>
+                            <td data-column="Category">{{ asset.Category }}</td>
+                            <td>{{ asset.MaintenanceID.LastMaintenanceDate }}</td>
+                            <td>{{ asset.MaintenanceID.NextMaintenanceDate }}</td>
+                            <td>
+                                <span class="status-badge {% if asset.dynamic_status == 'Overdue' %}status-overdue{% else %}status-upcoming{% endif %}">
+                                    {{ asset.dynamic_status }}
+                                </span>
+                            </td>
+                            <td data-column="VendorName">
+                                <a href="#" 
+                                   class="vendor-link" 
+                                   data-vendor-name="{{asset.VendorID.VendorName}}" 
+                                   data-vendor-bgsw-id="{{asset.VendorID.BgswVendorId}}"
+                                   data-vendor-contact="{{asset.VendorID.VendorContact}}" 
+                                   data-vendor-notes="{{asset.VendorID.VendorNotes}}" 
+                                   style="text-decoration: none; font-weight: bold; color: #2171b5;">
+                                    {{asset.VendorID.VendorName}}
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="vendorInfoModal" class="vendor-modal">
+        <div class="vendor-modal-content">
+            <span class="vendor-close-button">&times;</span>
+            <div class="vendor-modal-header">
+                <h2>Vendor Information</h2>
+            </div>
+            <div class="vendor-modal-body">
+                <p><strong>Vendor Name:</strong> <span id="vendorModalName"></span></p>
+                <p><strong>BGSW Vendor Id:</strong> <span id="vendorModalbgswid"></span></p>
+                <p><strong>Vendor Contact:</strong> <span id="vendorModalContact"></span></p>
+                <p><strong>More Info:</strong> <span id="vendorModalNotes"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Ensure the modal is hidden when the page loads
+            document.getElementById("logoutModal").style.display = "none";
+        });
+
+        // Open modal when avatar or username is clicked
+        function openLogoutModal() {
+            document.getElementById("logoutModal").style.display = "flex"; // Show modal
+        }
+
+        // Close modal when user clicks outside the modal content
+        function closeLogoutModal() {
+            document.getElementById("logoutModal").style.display = "none"; // Hide modal
+        }
+
+        // Close logout modal if user clicks outside the modal box
+        window.onclick = function(event) {
+            let logoutModal = document.getElementById("logoutModal");
+            // Check if the click happened outside of the modal content (to close it)
+            if (event.target === logoutModal) {
+                logoutModal.style.display = "none"; // Close modal
+            }
+        }
+
+         function sortTable(columnIndex, isAscending) {
+        const tableBody = document.querySelector("#maintenanceTable tbody");
+        const rows = Array.from(tableBody.rows);
+
+        rows.sort((a, b) => {
+            const aText = a.cells[columnIndex].textContent.trim();
+            const bText = b.cells[columnIndex].textContent.trim();
+            return isAscending
+                ? aText.localeCompare(bText, undefined, { numeric: true })
+                : bText.localeCompare(aText, undefined, { numeric: true });
+        });
+
+        rows.forEach(row => tableBody.appendChild(row));
+        }
+
+        // Add event listener to the "Asset ID" header
+        document.querySelector("th:nth-child(1)").addEventListener("click", function () {
+            const isAscending = !this.classList.contains("ascending");
+            sortTable(0, isAscending);
+            document.querySelectorAll("th").forEach(th => th.classList.remove("ascending", "descending"));
+            this.classList.add(isAscending ? "ascending" : "descending");
+        });
+      
+        function applyFilters() {
+            const searchTerm = document.getElementById("searchBox").value.toLowerCase().trim();
+            const selectedCategory = document.getElementById("categoryFilter").value;
+            const selectedStatus = document.getElementById("statusFilter").value;
+            const rows = document.querySelectorAll("#maintenanceTable tbody tr");
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const categoryCell = row.querySelector("[data-column='Category']");
+                const category = categoryCell.textContent.trim();
+                const statusBadge = row.querySelector(".status-badge");
+                const status = statusBadge.textContent.trim();
+
+                const matchesSearch = text.includes(searchTerm);
+                const matchesCategory = selectedCategory === "all" || category === selectedCategory;
+                const matchesStatus = selectedStatus === "all" || status === selectedStatus;
+
+                row.style.display = (matchesSearch && matchesCategory && matchesStatus) ? "" : "none";
+            });
+        }
+        document.getElementById("searchBox").addEventListener("input", applyFilters);
+        document.getElementById("categoryFilter").addEventListener("change", applyFilters);
+        document.getElementById("statusFilter").addEventListener("change", applyFilters);
+
+        // Vendor modal functionality
+        const vendorModal = document.getElementById('vendorInfoModal');
+        const closeVendorModal = document.querySelector('.vendor-close-button');
+        const modalVendorName = document.getElementById('vendorModalName');
+        const modalVendorBgswId = document.getElementById('vendorModalbgswid');
+        
+        const modalVendorContact = document.getElementById('vendorModalContact');
+        const modalVendorNotes = document.getElementById('vendorModalNotes');
+
+        document.querySelectorAll('.vendor-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                modalVendorName.textContent = this.dataset.vendorName;
+                modalVendorBgswId.textContent = this.dataset.vendorBgswId;
+                modalVendorContact.textContent = this.dataset.vendorContact;
+                modalVendorNotes.textContent = this.dataset.vendorNotes;
+                vendorModal.classList.add('show');
+            });
+        });
+
+        closeVendorModal.addEventListener('click', () => {
+            vendorModal.classList.remove('show');
+        });
+
+        window.addEventListener('click', event => {
+            if (event.target === vendorModal) {
+                vendorModal.classList.remove('show');
+            }
+        });
+
+    </script>
+</body>
+</html>

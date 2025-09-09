@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Asset</title>
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: #1e40af;
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .logo {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .menu-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.3s, border-left 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .menu-item:hover {
+            background: #1e3a8a;
+        }
+
+        .menu-item.active {
+            background: #1e3a8a;
+            border-left: 4px solid white;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            background: #f0f5ff;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Form Container Styles */
+        .form-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .form-container h1 {
+            margin-bottom: 2rem;
+            color: #1e40af;
+            font-size: 1.8rem;
+        }
+
+        /* Button Styles */
+        .option-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .option-btn {
+            background-color: #1e40af;
+            color: white;
+            padding: 1rem 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .option-btn:hover {
+            background-color: #1e3a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(30, 64, 175, 0.2);
+        }
+
+        .option-btn:active {
+            transform: translateY(0);
+        }
+        .alert-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 0.2rem 0.5rem;
+    background-color: #ef4444; /* Red background */
+    color: white; /* White text */
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 9999px; /* Fully rounded corners */
+    line-height: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="/media/assets/images/logo.svg" alt="Logo" style="width: 24px; height: 24px;">
+                <span>Asset Manager</span>
+              </div>
+            <a href="{% url 'dashboard' %}" class="menu-item">
+                <div>Dashboard</div>
+            </a>
+            <a href="{% url 'Asset Inventory' %}" class="menu-item">
+                <div>Asset Inventory</div>
+            </a>
+            <a href="{% url 'Add Asset' %}" class="menu-item active">
+                <div>Add Asset</div>
+            </a>
+            <a href="{% url 'Alerts' %}" class="menu-item {% if request.resolver_match.url_name == 'Alerts' %}active{% endif %}">
+                <div>
+                    Alerts
+                    <!-- New Alert Badge -->
+                    {% if total_new_alerts > 0 %}
+                        <span class="alert-badge">{{ total_new_alerts }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            <a href="{% url 'MaintenancePage' %}" class="menu-item">
+                <div>Maintenance</div>
+            </a>
+            <a href="{% url 'asset_request_tracking' %}" class="menu-item">
+                <div>Asset Requests</div>
+            </a>
+            <a href="{% url 'Reports' %}" class="menu-item">
+                <div>Reports</div>
+            </a>
+            <a href="{% url 'user_management' %}" class="menu-item ">
+                <div>Users</div>
+            </a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="form-container">
+                <h1>Select Asset Type</h1>
+                <div class="option-buttons">
+                    <button class="option-btn" onclick="redirectToHardware()">
+                        Hardware
+                    </button>
+                    <button class="option-btn" onclick="redirectToSoftware()">
+                        Software
+                    </button>
+                    <button class="option-btn" onclick="redirectToExcelUpload()">
+                        Upload via Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function redirectToHardware() {
+            window.location.href = "{% url 'add_hardware_asset' %}";
+        }
+
+        function redirectToSoftware() {
+            window.location.href = "{% url 'add_software_asset' %}";
+        }
+
+        function redirectToExcelUpload() {
+            window.location.href = "{% url 'upload_excel' %}";
+        }
+    </script>
+</body>
+</html>

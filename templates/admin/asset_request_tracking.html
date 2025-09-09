@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Management - Request Tracking</title>
+    <style>
+       /* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f0f5ff;
+}
+
+/* Layout */
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    background: #f0f5ff;
+    padding: 2rem;
+}
+
+/* Header Styles */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background: #1e40af;
+    color: white;
+    padding: 2rem 0;
+}
+
+.sidebar a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.logo {
+    padding: 0 1.5rem;
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.menu-item {
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.menu-item:hover {
+    background: #1e3a8a;
+}
+
+.menu-item.active {
+    background: #1e3a8a;
+    border-left: 4px solid white;
+}
+
+/* User Info Styles */
+.user-info {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.user-avatar {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    background-color: #1e40af;
+    color: white;
+    text-align: center;
+    line-height: 40px;
+    border-radius: 50%;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+.user-name {
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+/* Tab Styles */
+.tab-container {
+    margin-bottom: 20px;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background-color: #e5e7eb;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.tab-btn.active {
+    background-color: #1e40af;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Filter Styles */
+.filter-container {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-group select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: #333;
+}
+
+.filter-group select:focus {
+    border-color: #1e40af;
+    outline: none;
+}
+
+.filter-group select option:checked {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+#stageDateFilter {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #fff;
+    color: #333;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+#stageDateFilter:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+#stageDateFilterReturn {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #fff;
+    color: #333;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+#stageDateFilterReturn:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Table Styles */
+.asset-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+}
+.asset-table td,
+.asset-table th {
+    text-align: center;
+    vertical-align: middle;
+}
+/* Hide the Stage column (both header and all rows) */
+#requestTable th:nth-child(6),
+#requestTable td:nth-child(6) {
+    display: none;
+}
+
+#returnTable th:nth-child(6),
+#returnTable td:nth-child(6) {
+    display: none;
+}
+
+.asset-table th {
+    background-color: #1e40af;
+    color: white;
+  
+    padding: 12px 15px;
+}
+
+.asset-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.asset-table tr:last-child td {
+    border-bottom: none;
+}
+
+.asset-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.date-field {
+    color: #4b5563;
+    font-size: 0.9rem;
+}
+
+/* Status Badge Styles */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Request Status Styles */
+.status-requested {
+    background-color: #dbeafe;
+    color: #3b82f6;
+}
+
+.status-approved {
+    background-color: #dcfce7;
+    color: #22c55e;
+}
+
+.status-issued {
+    background-color: #fef3c7;
+    color: #f59e0b;
+}
+
+.status-received {
+    background-color: #e0e7ff;
+    color: #6366f1;
+}
+
+.status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Return Status Styles */
+.status-return-requested {
+    background-color: #dbeafe;
+    color: #3b82f6;
+}
+
+.status-accepted {
+    background-color: #dcfce7;
+    color: #22c55e;
+}
+
+.status-returned {
+    background-color: #e0e7ff;
+    color: #6366f1;
+}
+
+.status-closed {
+    background-color: #fff8e7;
+    color: #b45309;
+}
+
+/* Cycle Status Styles */
+.cycle-status {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    font-size: 0.85rem;
+    letter-spacing: 0.3px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: white;
+}
+
+.cycle-status::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+    z-index: 1;
+    pointer-events: none;
+}
+
+.cycle-status::after {
+    content: '';
+    position: absolute;
+    height: 4px;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 0 0 999px 999px;
+}
+
+.cycle-status:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+/* Cycle Status Variants */
+.cycle-status-approved {
+    background-color: #e0f2fe;
+    color: #0284c7;
+    border: 1px solid rgba(2, 132, 199, 0.2);
+}
+
+.cycle-status-approved:hover{
+    background-color: #bae6fd;
+}
+
+.cycle-status-completed {
+    background-color: #dcfce7;
+    color: #16a34a;
+    border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.cycle-status-completed:hover {
+    background-color: #bbf7d0;
+}
+.cycle-status-pending {
+    background-color: #ffedd5;
+    color: #ea580c;
+    border: 1px solid rgba(234, 88, 12, 0.2);
+}
+
+.cycle-status-pending:hover {
+    background-color: #fed7aa;
+}
+
+.cycle-status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.cycle-status-rejected:hover {
+    background-color: #f1aeb5;
+}.action-btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+}
+/* Return Requested – Light Green */
+.cycle-status-return-requested {
+    background-color: #ecfdf5; /* mint green */
+    color: #10b981; /* emerald */
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.cycle-status-return-requested:hover {
+    background-color: #d1fae5;
+}
+
+/* Return Accepted – Medium Green */
+.cycle-status-returnaccepted {
+    background-color: #d1fae5; /* emerald-100 */
+    color: #059669; /* emerald-600 */
+    border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+.cycle-status-returnaccepted:hover {
+    background-color: #a7f3d0;
+}
+
+/* Return Received – Richer Green */
+.cycle-status-returnreceived {
+    background-color: #bbf7d0; /* emerald-200 */
+    color: #047857; /* emerald-700 */
+    border: 1px solid rgba(4, 120, 87, 0.2);
+}
+
+.cycle-status-returnreceived:hover {
+    background-color: #86efac;
+}
+
+/* Return Completed – Deep Green */
+.cycle-status-surrendered {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid rgba(22, 101, 52, 0.2);
+}
+
+.cycle-status-surrendered:hover {
+    background-color: #bbf7d0;
+}
+
+/* Consistent look on hover */
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Using Blue Palette */
+.action-btn.approve {
+    background-color: #1e40af;
+}
+
+.action-btn.approve:hover {
+    background-color: #162d79;
+}
+
+/* Subtle red, not loud red */
+.action-btn.reject {
+    background-color: #dc2626;
+}
+
+.action-btn.reject:hover {
+    background-color: #b91c1c;
+}
+
+/* Button Group inside Table Cell */
+.table-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* space between buttons */
+    flex-wrap: wrap; /* makes it responsive if screen is small */
+}
+
+
+.action-btn.issue {
+    background-color: #274bc0;
+}
+.action-btn.issue:hover {
+    background-color: #1e3ea3;
+}
+
+.action-btn.accept-return {
+    background-color: #3357cc;
+}
+.action-btn.accept-return:hover {
+    background-color: #2747b8;
+}
+
+.action-btn.mark-returned {
+    background-color: #3e63d3;
+}
+.action-btn.mark-returned:hover {
+    background-color: #2f50b8;
+}
+
+.action-btn.close-request {
+    background-color: #4a6fd9;
+}
+.action-btn.close-request:hover {
+    background-color: #3758ba;
+}
+/* Blue palette variations */
+.action-btn.accept-return {
+    background-color: #3357cc;
+}
+
+.action-btn.accept-return:hover {
+    background-color: #2747b8;
+}
+
+.action-btn.mark-returned {
+    background-color: #3e63d3;
+}
+
+.action-btn.mark-returned:hover {
+    background-color: #2f50b8;
+}
+
+.action-btn.close-request {
+    background-color: #4a6fd9;
+}
+
+.action-btn.close-request:hover {
+    background-color: #3758ba;
+}
+
+/* Optional: Style for no action text */
+.no-actions {
+    font-size: 0.9rem;
+    color: #6b7280;
+    font-style: italic;
+}
+
+/* Modal Styles */
+.logout-modal, .status-lifecycle-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.logout-modal-content, .status-lifecycle-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.logout-modal-content {
+    text-align: center;
+    width: 300px;
+}
+
+.status-lifecycle-content {
+    width: 700px;
+    max-width: 95%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.logout-modal-buttons {
+    margin-top: 15px;
+}
+
+.logout-btn, .cancel-btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.logout-btn {
+    background-color: #1e40af;
+    color: white;
+    text-decoration: none;
+    margin-right: 10px;
+    display: inline-block;
+}
+
+.logout-btn:hover {
+    background-color: #162d79;
+}
+
+.cancel-btn {
+    background-color: #ccc;
+    color: black;
+    border: none;
+}
+
+.cancel-btn:hover {
+    background-color: #bbb;
+}
+
+/* Status Lifecycle Modal */
+.status-lifecycle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.status-lifecycle-header h3 {
+    margin: 0;
+}
+
+.status-lifecycle-header .close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+}
+
+/* Timeline Styling */
+.status-timeline {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+    flex-wrap: wrap;
+    gap: 5px 0;
+}
+
+.status-timeline::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #ddd;
+    z-index: 0;
+}
+
+.timeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    width: 12%;
+    min-width: 60px;
+    margin-bottom: 10px;
+}
+
+.timeline-step:nth-child(5)::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: -10px;
+    height: 2px;
+    width: 20px;
+    background-color: #1e40af;
+    z-index: 1;
+}
+
+.step-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+    position: relative;
+}
+
+.step-circle.active {
+    border-color: #1e40af;
+    background-color: #1e40af;
+    color: white;
+}
+
+.step-circle.completed {
+    border-color: #22c55e;
+    background-color: #22c55e;
+    color: white;
+}
+
+.step-name {
+    font-size: 0.75rem;
+    text-align: center;
+    color: #666;
+}
+
+.step-name.active {
+    color: #1e40af;
+    font-weight: bold;
+}
+
+.step-name.completed {
+    color: #22c55e;
+    font-weight: bold;
+}
+
+.step-date {
+    font-size: 0.7rem;
+    color: #888;
+    margin-top: 3px;
+    text-align: center;
+}
+
+/* Timeline Details */
+.timeline-details {
+    margin-top: 20px;
+}
+
+.timeline-details h4 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.timeline-details ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.timeline-details li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.timeline-details li:last-child {
+    border-bottom: none;
+}
+
+.timeline-date {
+    font-weight: bold;
+    color: #1e40af;
+}
+
+/* Alert Badge */
+.alert-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 0.2rem 0.5rem;
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 9999px;
+    line-height: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Comment Popover Styles */
+.comment-popover {
+    display: none;
+    position: absolute;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 10;
+    max-width: 300px;
+    width: 300px;
+}
+
+.comment-popover h4 {
+    margin-top: 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+.comment-popover p {
+    margin: 5px 0;
+}
+
+.comment-popover .close-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #888;
+}
+
+.comment-icon {
+    cursor: pointer;
+    color: #1e40af;
+    margin-left: 5px;
+}
+td, th {
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100px; /* or whatever width fits best */
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .timeline-step {
+        width: 24%;
+    }
+
+    .status-timeline::before {
+        display: none;
+    }
+}
+/* User Details Modal */
+.user-details-modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.user-details-content {
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    width: 500px;
+    max-width: 95%;
+    color: #333;
+    font-size: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+
+.user-details-content h3 {
+   
+    color: #1e40af; 
+    margin-bottom: 25px;
+    font-size: 1.4rem;
+}
+
+
+
+.user-name-link {
+    background-color: #e0f2fe; /* light blue */
+    color: #1e40af;            /* deep blue text */
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+.user-name-link:hover {
+    background-color: #bae6fd; /* slightly darker on hover */
+}
+
+.user-details-buttons {
+    text-align: center;
+    margin-top: 25px;
+}
+
+.user-close-btn {
+    background-color: #dc2626; /* bright red */
+    color: white;
+    font-weight: bold;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.user-close-btn:hover {
+    background-color: #b91c1c; /* deeper red on hover */
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="/media/assets/images/logo.svg" alt="Logo" style="width: 24px; height: 24px;">
+                <span>Asset Manager</span>
+              </div>
+            <a href="{% url 'dashboard' %}" class="menu-item">
+                <div>Dashboard</div>
+            </a>
+            <a href="{% url 'Asset Inventory' %}" class="menu-item">
+                <div>Asset Inventory</div>
+            </a>
+            <a href="{% url 'Add Asset' %}" class="menu-item">
+                <div>Add Asset</div>
+            </a>
+            <a href="{% url 'Alerts' %}" class="menu-item {% if request.resolver_match.url_name == 'Alerts' %}active{% endif %}">
+                <div>
+                    Alerts
+                    <!-- New Alert Badge -->
+                    {% if total_new_alerts > 0 %}
+                        <span class="alert-badge">{{ total_new_alerts }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            <a href="{% url 'MaintenancePage' %}" class="menu-item ">
+                <div>Maintenance</div>
+            </a>
+            <a href="{% url 'asset_request_tracking' %}" class="menu-item active">
+                <div>Asset Requests</div>
+            </a>
+            <a href="{% url 'Reports' %}" class="menu-item">
+                <div>Reports</div>
+            </a>
+            <a href="{% url 'user_management' %}" class="menu-item ">
+                <div>Users</div>
+            </a>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <h1>Asset Lifecycle Tracking</h1>
+               
+                <div class="user-info" onclick="openLogoutModal()">
+                    <span class="user-name">{{ user.username }}</span>
+                    <div class="user-avatar">
+                        {{ user.email.0|upper }}{{ user.email.1|lower }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Logout Pop-up Modal -->
+            <div id="logoutModal" class="logout-modal">
+                <div class="logout-modal-content">
+                    <p>Are you sure you want to logout?</p>
+                    <div class="logout-modal-buttons">
+                        <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                        <button onclick="closeLogoutModal()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status Lifecycle Modal -->
+            <div id="statusLifecycleModal" class="status-lifecycle-modal">
+                <div class="status-lifecycle-content">
+                    <div class="status-lifecycle-header">
+                        <h3>Asset Request Lifecycle</h3>
+                        <button class="close-btn" onclick="closeStatusLifecycle()">✕</button>
+                    </div>
+                    <div class="status-timeline">
+                        <!-- Timeline steps will be dynamically inserted here by JavaScript -->
+                    </div>
+                    <div class="timeline-details">
+                        <h4>Status History</h4>
+                        <ul id="statusHistory">
+                            <!-- Status history details will be dynamically inserted here by JavaScript -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="showTab('requests')">Asset Requests</button>
+                    <button class="tab-btn" onclick="showTab('returns')">Asset Returns</button>
+                </div>
+                
+                <!-- Asset Requests Tab -->
+                <div id="requests" class="tab-content active">
+                    <div class="filter-container" style="display: flex; gap: 20px; align-items: center;">
+                        <div class="filter-group">
+                            <label for="statusFilter">Stages:</label>
+                            <select id="statusFilter" onchange="filterTable('requestTable', 'status')">
+                                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Stages</option>
+                                <option value="requested" {% if status_filter == 'requested' %}selected{% endif %}>Requested</option>
+                                <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                                <option value="issued" {% if status_filter == 'issued' %}selected{% endif %}>Issued</option>
+                                <option value="received" {% if status_filter == 'received' %}selected{% endif %}>Ack/Received</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="dateFilter">Date Range:</label>
+                            <select id="dateFilter" onchange="filterTable('requestTable', 'date')">
+                                <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Dates</option>
+                                <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                                <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                                <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="stageDateFilter">Stage Date:</label>
+                            <input type="date" id="stageDateFilter" onchange="filterByStageDate('requestTable')">
+                        </div>
+                        
+                    </div>
+                    
+                    <table class="asset-table" id="requestTable" style="max-height: 400px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd;">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Asset Number</th>
+                                <th>Requested By</th>
+                                <th>From Date</th>
+                                <th>To Date</th>
+                                <th>Stage Date</th>
+                                <th>Status</th>
+                                
+                                <th>Stage</th>
+                                
+
+
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tbody>
+                                {% for request in request_data %}
+                                <tr>
+                                    <td>{{ request.asset_name }}</td>
+                                    <td>{{ request.asset_number }}</td>
+                                    <td>
+                                        <span class="user-name-link" onclick="showUserDetailsModal('{{ request.user_id }}')">
+                                            {{ request.user_name }}
+                                          </span>
+                                          
+                                      </td>
+                                      
+                                    <td class="date-field">{{ request.start_date|date:"M d, Y" }}</td>
+                                    <td class="date-field">
+                                       
+                                            {{ request.end_date|date:"M d, Y" }}
+                                            
+                                    </td>
+                                    <td class="stage-date-field">{{ request.stage_date|date:"Y-m-d" }}</td>
+
+                                    <td>
+                                        <span class="cycle-status cycle-status-{{ request.cycle_status|lower }}">
+                                          {{ request.cycle_status }}
+                                        </span>
+                                      </td>
+                                      
+                                    <td>
+                                        <span class="status-badge status-{{ request.status }}" 
+                                              onclick="showStatusLifecycle('{{ request.asset_name }}', '{{ request.status }}', {{ request.request_id }})">
+                                            {% if request.status == 'requested' %}Requested{% endif %}
+                                            {% if request.status == 'approved' %}Approved{% endif %}
+                                            {% if request.status == 'issued' %}Issued{% endif %}
+                                            {% if request.status == 'received' %}Ack/Received{% endif %}
+                                            {% if request.status == 'rejected' %}Rejected{% endif %}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {% if request.status == 'requested' %}
+                                            <div class="table-actions">
+                                                <button class="action-btn approve" onclick="openCommentModal({{ request.request_id }}, 'approve')">Approve</button>
+                                                <button class="action-btn reject" onclick="openCommentModal({{ request.request_id }}, 'reject')">Reject</button>
+                                            </div>
+                                        {% endif %}
+                                        {% if request.status == 'approved' %}
+                                            <button class="action-btn issue" onclick="openCommentModal({{ request.request_id }}, 'issue')">Issue</button>
+                                        {% endif %}
+                                        {% if request.status == 'issued' %}
+
+                                        <span class="no-actions">Waiting for User to Acknowledge Receipt</span>
+                                        {% endif %}
+                                        {% if request.status == 'received' or request.status == 'rejected' %}
+
+                                            <span class="no-actions">No More Actions Needed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" style="text-align: center;">No asset requests found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                    </table>
+                </div>
+                
+                <!-- Asset Returns Tab -->
+                <div id="returns" class="tab-content">
+                    <div class="filter-container" style="display: flex; gap: 20px; align-items: center;">
+                        <div class="filter-group">
+                            <label for="returnStatusFilter">Stages:</label>
+                            <select id="returnStatusFilter" onchange="filterTable('returnTable', 'status')">
+                                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Stages</option>
+                                <option value="return-requested" {% if status_filter == 'return-requested' %}selected{% endif %}>Return Requested</option>
+                                <option value="accepted" {% if status_filter == 'accepted' %}selected{% endif %}>Accepted</option>
+                                <option value="returned" {% if status_filter == 'returned' %}selected{% endif %}>Received</option>
+                                <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="returnDateFilter">Date Range:</label>
+                            <select id="returnDateFilter" onchange="filterTable('returnTable', 'date')">
+                                <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Dates</option>
+                                <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                                <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                                <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="stageDateFilter">Stage Date:</label>
+                            <input type="date" id="stageDateFilterReturn" onchange="filterByStageDate('returnTable')">
+
+                        </div>
+                        
+                    </div>
+                    
+                    <table class="asset-table" id="returnTable" style="max-height: 400px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd;">
+                        <thead>
+                            <tr>
+                                <th>Asset Name</th>
+                                <th>Asset Number</th>
+                                <th>Returned By</th>
+                                <th>Issue Date</th>
+                                <th>Return Date</th>
+                                <th>Stage Date</th>
+
+                                <th>Status</th>
+                                <th>Stage</th>
+                                
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in return_data %}
+                            <tr>
+                                <td>{{ request.asset_name }}</td>
+                                <td>{{ request.asset_number }}</td>
+                                <td>
+                                    <span class="user-name-link" onclick="showUserDetailsModal('{{ request.user_id }}')">
+                                        {{ request.user_name }}
+                                      </span>
+                                      
+                                  </td>
+                                  
+                                <td class="date-field">{{ request.start_date|date:"M d, Y" }}</td>
+                                <td class="date-field">{{ request.surrender_date|default:request.end_date|date:"M d, Y" }}</td>
+                                <td class="stage-date-field">{{ request.stage_date|date:"Y-m-d" }}</td>
+
+                                <td>
+                                    <span class="cycle-status cycle-status-{{request.cycle_status|lower}}">
+                                        {{ request.cycle_status }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="status-badge status-{{ request.status }}"
+                                          onclick="showReturnStatusLifecycle('{{ request.asset_name }}', '{{ request.status }}', {{ request.request_id }})">
+                                        {% if request.status == 'received' %}Received{% endif %}
+                                        {% if request.status == 'return-requested' %}Return Requested{% endif %}
+                                        {% if request.status == 'accepted' %}Accepted{% endif %}
+                                        {% if request.status == 'returned' %}Returned{% endif %}
+                                        {% if request.status == 'closed' %}Closed{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="table-actions">
+                                      {% if request.status == 'return-requested' %}
+                                        <button onclick="openCommentModal({{ request.request_id }}, 'accept_return')" class="action-btn accept-return">
+                                          Accept Return
+                                        </button>
+                                      {% endif %}
+                                      
+                                      {% if request.status == 'accepted' %}
+                                        <button onclick="openCommentModal({{ request.request_id }}, 'mark_returned')" class="action-btn mark-returned">
+                                          Mark Received
+                                        </button>
+                                      {% endif %}
+                                      
+                                      {% if request.status == 'returned' %}
+                                        <button onclick="openCommentModal({{ request.request_id }}, 'close_request')" class="action-btn close-request">
+                                          Close Request
+                                        </button>
+                                      {% endif %}
+                                      
+                                      {% if request.status == 'closed' %}
+                                        <span class="no-actions">No More Actions Needed</span>
+                                      {% endif %}
+                                    </div>
+                                  </td>
+                                  
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" style="text-align: center;">No asset returns found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+           <!-- User Details Modal -->
+<div id="userDetailsModal" class="user-details-modal">
+    <div class="user-details-content">
+      <h3>User Details</h3>
+      <p><strong>Name:</strong> <span id="modalUserName"></span></p>
+      <p><strong>Email:</strong> <span id="modalUserEmail"></span></p>
+      <p><strong>Phone:</strong> <span id="modalUserPhone"></span></p>
+      <div class="user-details-buttons">
+        <button onclick="closeUserDetailsModal()" class="user-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+  
+              
+              
+            <!-- Comment Modal -->
+            <div id="commentModal" class="logout-modal" style="display: none;">
+                <div class="logout-modal-content" style="width: 400px;">
+                    <h3>Add Comment</h3>
+                    <form id="commentForm" method="post" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="">
+                        <input type="hidden" name="active_tab" value="requests">
+                        <textarea name="comment" style="width: 100%; height: 100px; margin: 15px 0; padding: 8px;" placeholder="Enter your comment..."></textarea>
+                        <div class="logout-modal-buttons">
+                            <button type="submit" class="logout-btn">Submit</button>
+                            <button type="button" onclick="closeCommentModal()" class="cancel-btn">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+       function showUserDetailsModal(userId) {
+  fetch(`/api/user-details/${userId}/`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) throw new Error(data.error);
+
+      document.getElementById('modalUserName').textContent = data.name || 'N/A';
+      document.getElementById('modalUserEmail').textContent = data.email || 'N/A';
+      document.getElementById('modalUserPhone').textContent = data.phone || 'N/A';
+
+      document.getElementById('userDetailsModal').style.display = 'flex';
+    })
+    .catch(err => {
+      alert('Could not load user info.');
+      console.error(err);
+    });
+}
+
+function closeUserDetailsModal() {
+  document.getElementById('userDetailsModal').style.display = 'none';
+}
+
+// Allow closing when clicking outside modal content
+window.addEventListener("click", function(event) {
+  const modal = document.getElementById("userDetailsModal");
+  const content = document.querySelector(".user-details-content");
+  if (event.target === modal) {
+    modal.style.display = "none";
+  }
+});
+
+
+       function filterByStageDate(tableId) {
+    const inputId = tableId === 'requestTable' ? 'stageDateFilter' : 'stageDateFilterReturn';
+    const filterDate = document.getElementById(inputId).value;
+    const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+
+    rows.forEach(row => {
+        const stageDateCell = row.querySelector('.stage-date-field');
+        if (!stageDateCell) return;
+
+        const stageDate = stageDateCell.textContent.trim();
+        if (filterDate === '' || stageDate === filterDate) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function showTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    // Deactivate all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    // Show the selected tab content
+    document.getElementById(tabId).classList.add('active');
+    // Activate the clicked tab button
+    const clickedButton = document.querySelector(`.tab-btn[onclick="showTab('${tabId}')"]`);
+    if (clickedButton) {
+        clickedButton.classList.add('active');
+    }
+}
+
+// Comment popup functionality
+function showComment(commentId) {
+    const comment = document.getElementById(commentId);
+    comment.style.display = 'block';
+    
+    // Position the comment popup
+    const commentIcon = event.currentTarget;
+    const rect = commentIcon.getBoundingClientRect();
+    comment.style.top = rect.bottom + 10 + 'px';
+    comment.style.left = rect.left - 150 + 'px';
+}
+
+function hideComment(commentId) {
+    document.getElementById(commentId).style.display = 'none';
+}
+
+// Status lifecycle modal for requests
+function showStatusLifecycle(assetName, status, requestId) {
+    const modal = document.getElementById('statusLifecycleModal');
+    const timeline = document.querySelector('.status-timeline');
+    const statusHistory = document.getElementById('statusHistory');
+    
+    // Clear previous content
+    timeline.innerHTML = '';
+    statusHistory.innerHTML = '';
+    
+    // Create timeline based on status
+    const statuses = ['requested', 'approved', 'issued', 'received'];
+    const statusLabels = ['Requested', 'Approved', 'Issued', 'Received'];
+    const currentStatusIndex = statuses.indexOf(status);
+    
+    // Fetch actual history from the server
+    fetch(`/api/request-history/${requestId}/`)
+        .then(response => response.json())
+        .then(data => {
+            // Build timeline with actual data
+            buildTimeline(timeline, statusHistory, statuses, statusLabels, currentStatusIndex, data);
+            modal.style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('Error fetching request history:', error);
+            // Fallback to static timeline
+            buildStaticTimeline(timeline, statusHistory, statuses, statusLabels, currentStatusIndex, assetName);
+            modal.style.display = 'flex';
+        });
+}
+function showReturnStatusLifecycle(assetName, status, requestId) {
+    const modal = document.getElementById('statusLifecycleModal');
+    const timeline = document.querySelector('.status-timeline');
+    const statusHistory = document.getElementById('statusHistory');
+    
+    // Clear previous content
+    timeline.innerHTML = '';
+    statusHistory.innerHTML = '';
+    
+    // Create timeline based on status
+    // Complete lifecycle: request phases + return phases
+    const statuses = ['requested', 'approved', 'issued', 'received', 'return-requested', 'accepted', 'returned', 'closed'];
+    const statusLabels = ['Requested', 'Approved', 'Issued', 'Received', 'Return Requested', 'Return Accepted', 'Return Received', 'Closed'];
+    
+    // Determine where in the full lifecycle we are (0-7)
+    let currentStatusIndex;
+    if (['requested', 'approved', 'issued', 'received'].includes(status)) {
+        currentStatusIndex = statuses.indexOf(status);
+    } else {
+        // For return statuses, we assume the first 4 stages are complete
+        currentStatusIndex = statuses.indexOf(status);
+    }
+    
+    // Fetch actual history from the server
+    fetch(`/api/request-history/${requestId}/`)
+        .then(response => response.json())
+        .then(data => {
+            // Build timeline with actual data for the complete lifecycle
+            buildCompleteTimeline(timeline, statusHistory, statuses, statusLabels, currentStatusIndex, data);
+            modal.style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('Error fetching request history:', error);
+            // Fallback to static timeline
+            buildStaticCompleteTimeline(timeline, statusHistory, statuses, statusLabels, currentStatusIndex, assetName);
+            modal.style.display = 'flex';
+        });
+}
+
+function buildCompleteTimeline(timeline, statusHistory, statuses, statusLabels, currentStatusIndex, data) {
+    // Make sure data is an array
+    if (!Array.isArray(data)) {
+        console.error('Expected data to be an array, got:', data);
+        // Fallback to static timeline
+        buildStaticCompleteTimeline(timeline, statusHistory, statuses, statusLabels, currentStatusIndex, "Unknown Asset");
+        return;
+    }
+    
+    // Calculate timeline width to accommodate more steps
+    timeline.style.justifyContent = "space-between";
+    
+    // Add timeline steps
+    statuses.forEach((step, index) => {
+        const stepEl = document.createElement('div');
+        stepEl.className = 'timeline-step';
+        
+        const circle = document.createElement('div');
+        circle.className = 'step-circle';
+        if (index < currentStatusIndex) {
+            circle.classList.add('completed');
+            circle.innerHTML = '✓';
+        } else if (index === currentStatusIndex) {
+            circle.classList.add('active');
+            circle.innerHTML = index + 1;
+        } else {
+            circle.innerHTML = index + 1;
+        }
+        
+        const name = document.createElement('div');
+        name.className = 'step-name';
+        if (index < currentStatusIndex) {
+            name.classList.add('completed');
+        } else if (index === currentStatusIndex) {
+            name.classList.add('active');
+        }
+        name.textContent = statusLabels[index];
+        
+        const date = document.createElement('div');
+        date.className = 'step-date';
+        
+        // Add dates from actual data
+        const stageData = data.find(item => item.ui_status === statuses[index]);
+        if (stageData && index <= currentStatusIndex) {
+            const dateObj = new Date(stageData.date);
+            date.textContent = dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+        }
+        
+        stepEl.appendChild(circle);
+        stepEl.appendChild(name);
+        stepEl.appendChild(date);
+        
+        timeline.appendChild(stepEl);
+    });
+    
+    // Add history items from actual data
+    data.forEach(stage => {
+        if (statuses.includes(stage.ui_status)) {
+            const li = document.createElement('li');
+            const dateObj = new Date(stage.date);
+            const dateStr = dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+            
+            const stageIndex = statuses.indexOf(stage.ui_status);
+            const stageName = statusLabels[stageIndex];
+            
+            li.innerHTML = `<span class="timeline-date">${dateStr}</span>: Status changed to <strong>${stageName}</strong> by <strong>${stage.by}</strong>`;
+            
+            if (stage.comment) {
+                li.innerHTML += ` - ${stage.comment}`;
+            }
+            
+            statusHistory.appendChild(li);
+        }
+    });
+}
+
+function buildStaticCompleteTimeline(timeline, statusHistory, statuses, statusLabels, currentStatusIndex, assetName) {
+    // Calculate timeline width to accommodate more steps
+    timeline.style.justifyContent = "space-between";
+    
+    // Add timeline steps - fallback version
+    statuses.forEach((step, index) => {
+        const stepEl = document.createElement('div');
+        stepEl.className = 'timeline-step';
+        
+        const circle = document.createElement('div');
+        circle.className = 'step-circle';
+        if (index < currentStatusIndex) {
+            circle.classList.add('completed');
+            circle.innerHTML = '✓';
+        } else if (index === currentStatusIndex) {
+            circle.classList.add('active');
+            circle.innerHTML = index + 1;
+        } else {
+            circle.innerHTML = index + 1;
+        }
+        
+        const name = document.createElement('div');
+        name.className = 'step-name';
+        if (index < currentStatusIndex) {
+            name.classList.add('completed');
+        } else if (index === currentStatusIndex) {
+            name.classList.add('active');
+        }
+        name.textContent = statusLabels[index];
+        
+        const date = document.createElement('div');
+        date.className = 'step-date';
+        
+        // Add dummy dates for fallback
+        if (index <= currentStatusIndex) {
+            const daysAgo = (currentStatusIndex - index) * 2;
+            const dateObj = new Date();
+            dateObj.setDate(dateObj.getDate() - daysAgo);
+            date.textContent = dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+        }
+        
+        stepEl.appendChild(circle);
+        stepEl.appendChild(name);
+        stepEl.appendChild(date);
+        
+        timeline.appendChild(stepEl);
+    });
+    
+    // Add static history items
+    for (let i = 0; i <= currentStatusIndex; i++) {
+        const li = document.createElement('li');
+        const daysAgo = (currentStatusIndex - i) * 2;
+        const dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() - daysAgo);
+        const dateStr = dateObj.toLocaleDateString('en-US', {
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric'
+        });
+        
+        li.innerHTML = `<span class="timeline-date">${dateStr}</span>: Status changed to <strong>${statusLabels[i]}</strong>`;
+        
+        // Add a dummy comment for the current status
+        if (i === currentStatusIndex) {
+            li.innerHTML += ` - Asset "${assetName}" has been ${statusLabels[i].toLowerCase()}`;
+        }
+        
+        statusHistory.appendChild(li);
+    }
+}
+function buildTimeline(timeline, statusHistory, statuses, statusLabels, currentStatusIndex, data) {
+    // Make sure data is an array
+    if (!Array.isArray(data)) {
+        console.error('Expected data to be an array, got:', data);
+        // Fallback to static timeline
+        buildStaticTimeline(timeline, statusHistory, statuses, statusLabels, currentStatusIndex, "Unknown Asset");
+        return;
+    }
+    
+    // Add timeline steps
+    statuses.forEach((step, index) => {
+        const stepEl = document.createElement('div');
+        stepEl.className = 'timeline-step';
+        
+        const circle = document.createElement('div');
+        circle.className = 'step-circle';
+        if (index < currentStatusIndex) {
+            circle.classList.add('completed');
+            circle.innerHTML = '✓';
+        } else if (index === currentStatusIndex) {
+            circle.classList.add('active');
+            circle.innerHTML = index + 1;
+        } else {
+            circle.innerHTML = index + 1;
+        }
+        
+        const name = document.createElement('div');
+        name.className = 'step-name';
+        if (index < currentStatusIndex) {
+            name.classList.add('completed');
+        } else if (index === currentStatusIndex) {
+            name.classList.add('active');
+        }
+        name.textContent = statusLabels[index];
+        
+        const date = document.createElement('div');
+        date.className = 'step-date';
+        
+        // Add dates from actual data
+        const stageData = data.find(item => item.ui_status === statuses[index]);
+        if (stageData && index <= currentStatusIndex) {
+            const dateObj = new Date(stageData.date);
+            date.textContent = dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+        }
+        
+        stepEl.appendChild(circle);
+        stepEl.appendChild(name);
+        stepEl.appendChild(date);
+        
+        timeline.appendChild(stepEl);
+    });
+    
+    // Add history items from actual data
+    data.forEach(stage => {
+        if (statuses.includes(stage.ui_status)) {
+            const li = document.createElement('li');
+            const dateObj = new Date(stage.date);
+            const dateStr = dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'});
+            
+            const stageIndex = statuses.indexOf(stage.ui_status);
+            const stageName = statusLabels[stageIndex];
+            
+            li.innerHTML = `<span class="timeline-date">${dateStr}</span>: Status changed to <strong>${stageName}</strong> by <strong>${stage.by}</strong>`;
+            
+            if (stage.comment) {
+                li.innerHTML += ` - ${stage.comment}`;
+            }
+            
+            statusHistory.appendChild(li);
+        }
+    });
+}
+
+function buildStaticTimeline(timeline, statusHistory, statuses, statusLabels, currentStatusIndex, assetName) {
+    // Add timeline steps - fallback version
+    statuses.forEach((step, index) => {
+        const stepEl = document.createElement('div');
+        stepEl.className = 'timeline-step';
+        
+        const circle = document.createElement('div');
+        circle.className = 'step-circle';
+        if (index < currentStatusIndex) {
+            circle.classList.add('completed');
+            circle.innerHTML = '✓';
+        } else if (index === currentStatusIndex) {
+            circle.classList.add('active');
+            circle.innerHTML = index + 1;
+        } else {
+            circle.innerHTML = index + 1;
+        }
+        
+        const name = document.createElement('div');
+        name.className = 'step-name';
+        if (index < currentStatusIndex) {
+            name.classList.add('completed');
+        } else if (index === currentStatusIndex) {
+            name.classList.add('active');
+        }
+        name.textContent = statusLabels[index];
+        
+        const date = document.createElement('div');
+        date.className = 'step-date';
+        
+        // Add dummy dates for fallback
+        if (index <= currentStatusIndex) {
+            const daysAgo = (currentStatusIndex - index) * 2;
+            const dateObj = new Date();
+            dateObj.setDate(dateObj.getDate() - daysAgo);
+            date.textContent = dateObj.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+        }
+        
+        stepEl.appendChild(circle);
+        stepEl.appendChild(name);
+        stepEl.appendChild(date);
+        
+        timeline.appendChild(stepEl);
+    });
+    
+    // Add static history items
+    for (let i = 0; i <= currentStatusIndex; i++) {
+        const li = document.createElement('li');
+        const daysAgo = (currentStatusIndex - i) * 2;
+        const dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() - daysAgo);
+        const dateStr = dateObj.toLocaleDateString('en-US', {
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric'
+        });
+        
+        li.innerHTML = `<span class="timeline-date">${dateStr}</span>: Status changed to <strong>${statusLabels[i]}</strong>`;
+        
+        // Add a dummy comment for the current status
+        if (i === currentStatusIndex) {
+            li.innerHTML += ` - Asset "${assetName}" has been ${statusLabels[i].toLowerCase()}`;
+        }
+        
+        statusHistory.appendChild(li);
+    }
+}
+
+function closeStatusLifecycle() {
+    document.getElementById('statusLifecycleModal').style.display = 'none';
+}
+document.addEventListener("DOMContentLoaded", function() {
+            // Ensure the modal is hidden when the page loads
+            document.getElementById("logoutModal").style.display = "none";
+        });
+
+        // Open modal when avatar or username is clicked
+        function openLogoutModal() {
+            document.getElementById("logoutModal").style.display = "flex"; // Show modal
+        }
+
+        // Close modal when user clicks outside the modal content
+        function closeLogoutModal() {
+            document.getElementById("logoutModal").style.display = "none"; // Hide modal
+        }
+
+        // Close logout modal if user clicks outside the modal box
+        window.onclick = function(event) {
+            let logoutModal = document.getElementById("logoutModal");
+            // Check if the click happened outside of the modal content (to close it)
+            if (event.target === logoutModal) {
+                logoutModal.style.display = "none"; // Close modal
+            }
+        }
+
+        // First, update the openCommentModal function to include the active tab
+function openCommentModal(requestId, action) {
+    const modal = document.getElementById('commentModal');
+    const form = document.getElementById('commentForm');
+    
+    // Get the active tab
+    const activeTab = document.querySelector('.tab-btn.active').getAttribute('onclick').match(/showTab\('(\w+)'\)/)[1];
+    
+    // Update the form action URL
+    form.action = `/update-request-status/${requestId}/`;
+    
+    // Set the action value in the hidden input
+    form.querySelector('input[name="action"]').value = action;
+    
+    // Add or update hidden input for tab
+    let tabInput = form.querySelector('input[name="active_tab"]');
+    if (!tabInput) {
+        tabInput = document.createElement('input');
+        tabInput.type = 'hidden';
+        tabInput.name = 'active_tab';
+        form.appendChild(tabInput);
+    }
+    tabInput.value = activeTab;
+    
+    // Update the modal title based on the action
+    let actionTitle = "Add Comment";
+    switch(action) {
+        case 'approve':
+            actionTitle = "Approve Request";
+            break;
+        case 'issue':
+            actionTitle = "Issue Asset";
+            break;
+        case 'accept_return':
+            actionTitle = "Accept Return";
+            break;
+        case 'mark_returned':
+            actionTitle = "Mark as Received";
+            break;
+        case 'close_request':
+            actionTitle = "Close Request";
+            break;
+    }
+    
+    // Update modal title
+    modal.querySelector('h3').textContent = actionTitle;
+    
+    // Clear previous comment if any
+    form.querySelector('textarea[name="comment"]').value = '';
+    
+    // Show the modal
+    modal.style.display = 'flex';
+}
+
+        function closeCommentModal() {
+            document.getElementById('commentModal').style.display = 'none';
+        }
+
+        // Add event listener to close the modal when clicking outside
+        window.onclick = function(event) {
+            let logoutModal = document.getElementById("logoutModal");
+            let commentModal = document.getElementById("commentModal");
+            let statusModal = document.getElementById("statusLifecycleModal");
+            
+            // Close appropriate modal if clicking outside content
+            if (event.target === logoutModal) {
+                logoutModal.style.display = "none";
+            } else if (event.target === commentModal) {
+                commentModal.style.display = "none";
+            } else if (event.target === statusModal) {
+                statusModal.style.display = "none";
+            }
+        }
+function filterTable(tableId, filterType) {
+    const table = document.getElementById(tableId);
+    const statusFilter = document.getElementById(tableId === 'requestTable' ? 'statusFilter' : 'returnStatusFilter').value;
+    const dateFilter = document.getElementById(tableId === 'requestTable' ? 'dateFilter' : 'returnDateFilter').value;
+    // Get the active tab
+    const activeTab = document.querySelector('.tab-btn.active').getAttribute('onclick').match(/showTab\('(\w+)'\)/)[1];
+    // Construct the URL with filter parameters and active tab
+    let url = window.location.pathname + '?';
+    if (statusFilter !== 'all') {
+        url += `status_filter=${statusFilter}&`;
+    }
+    if (dateFilter !== 'all') {
+        url += `date_filter=${dateFilter}&`;
+    }
+    url += `tab=${activeTab}`;
+    // Redirect to the same page with filters
+    window.location.href = url;
+}
+// Close comment popovers when clicking outside
+document.addEventListener('click', function(event) {
+    const commentPopovers = document.querySelectorAll('.comment-popover');
+    const commentIcons = document.querySelectorAll('.comment-icon');
+    
+    let clickedOnIcon = false;
+    commentIcons.forEach(icon => {
+        if (icon.contains(event.target)) {
+            clickedOnIcon = true;
+        }
+    });
+    
+    if (!clickedOnIcon) {
+        commentPopovers.forEach(popover => {
+            // Check if the click was inside a popover
+            if (!popover.contains(event.target)) {
+                popover.style.display = 'none';
+            }
+        });
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const statusFilter = urlParams.get('status_filter');
+    const dateFilter = urlParams.get('date_filter');
+    const activeTab = urlParams.get('tab') || 'requests'; // Default to 'requests' if not specified
+
+    // Set filter values for both tabs
+    if (statusFilter) {
+        document.getElementById('statusFilter').value = statusFilter;
+        document.getElementById('returnStatusFilter').value = statusFilter;
+    }
+    if (dateFilter) {
+        document.getElementById('dateFilter').value = dateFilter;
+        document.getElementById('returnDateFilter').value = dateFilter;
+    }
+
+    // Show the correct tab
+    showTab(activeTab);
+
+    // Highlight the selected filters
+    highlightSelectedFilters();
+});
+
+function highlightSelectedFilters() {
+    // Highlight status filter
+    const statusFilterValue = document.getElementById('statusFilter').value;
+    const returnStatusFilterValue = document.getElementById('returnStatusFilter').value;
+
+    highlightDropdown('statusFilter', statusFilterValue);
+    highlightDropdown('returnStatusFilter', returnStatusFilterValue);
+
+    // Highlight date filter
+    const dateFilterValue = document.getElementById('dateFilter').value;
+    const returnDateFilterValue = document.getElementById('returnDateFilter').value;
+
+    highlightDropdown('dateFilter', dateFilterValue);
+    highlightDropdown('returnDateFilter', returnDateFilterValue);
+}
+
+function highlightDropdown(dropdownId, selectedValue) {
+    const dropdown = document.getElementById(dropdownId);
+    if (dropdown) {
+        Array.from(dropdown.options).forEach(option => {
+            if (option.value === selectedValue) {
+                option.selected = true;
+            }
+        });
+    }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  const rows = document.querySelectorAll('#requestTable tbody tr');
+  
+  rows.forEach(row => {
+    const statusCell = row.cells[6]; // ✅ Corrected index for Cycle Status
+    
+    if (statusCell && !statusCell.querySelector('.cycle-status')) {
+      const statusText = statusCell.textContent.trim().toLowerCase();
+      
+      const statusSpan = document.createElement('span');
+      statusSpan.className = 'cycle-status';
+      statusSpan.textContent = statusCell.textContent.trim();
+      
+      if (statusText === 'pending') {
+        statusSpan.classList.add('cycle-status-pending');
+      } else if (statusText === 'approved') {
+        statusSpan.classList.add('cycle-status-approved');
+      } else if (statusText === 'completed') {
+        statusSpan.classList.add('cycle-status-completed');
+      }
+      
+      statusCell.textContent = '';
+      statusCell.appendChild(statusSpan);
+    }
+  });
+});
+
+</script>
+</body>
+</html>

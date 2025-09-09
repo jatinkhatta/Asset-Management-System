@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Management - Asset Inventory</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+	
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #001B2E;
+            color: white;
+            padding: 2rem 0;
+            
+        }
+        .sidebar a {
+            text-decoration: none; /* Removes underline */
+            color: inherit; /* Ensures the text color is inherited */
+            display: block; /* Makes the link span the full width of the div */
+        }
+
+
+        .logo {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .menu-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+
+        .menu-item:hover {
+            background: #001B2E;
+        }
+
+        .menu-item.active {
+            background:  #002d4a;
+            border-left: 4px solid white;
+        }
+
+        .main-content {
+            flex: 1;
+            background: #f0f5ff;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e1e8ed;
+        }
+        
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-info:hover {
+            background: #e1e8ed;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color:  #001B2E;
+            color: white;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+        
+        .user-info:hover .user-avatar {
+            transform: scale(1.1);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        /* Logout Modal Background */
+        .logout-modal {
+            display: none; /* Modal should be hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Dark Overlay */
+            z-index: 1000;
+            display: flex; /* Flexbox layout to center the modal */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+        }
+
+        /* Logout Modal Box */
+        .logout-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Logout Modal Buttons */
+        .logout-modal-buttons {
+            margin-top: 15px;
+        }
+
+        .logout-btn {
+            background-color:  #001B2E;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .logout-btn:hover {
+            background-color:  #001B2E;
+        }
+
+        .cancel-btn {
+            background-color: #ccc;
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel-btn:hover {
+            background-color: #bbb;
+        }
+
+        .inventory-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: start;
+           
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            min-width: 200px;
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            background: white;
+            min-width: 150px;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background:  #001B2E;
+            color: white;
+        }
+                .asset-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+
+        .asset-image:hover {
+            transform: scale(1.1);
+        }
+
+        .custom-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .custom-modal.show {
+            opacity: 1;
+        }
+
+        .custom-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90vh;
+        }
+
+        #modalImage {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+       
+       
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            border-radius: 5px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .column-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .checkbox-item {
+            margin-bottom: 10px;
+        }
+
+      /* General styling for the table */
+        .inventory-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        table {
+            width: auto; /* Allows the table to adjust width dynamically */
+            min-width: 100%;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            min-width: 120px; /* Ensures columns don't collapse too much */
+            white-space: nowrap; /* Prevents text wrapping */
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #001B2E;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        th.ascending::after {
+            content: " ▲";
+        }
+
+        th.descending::after {
+            content: " ▼";
+        }
+
+        /* Style for the table */
+        #assetTable {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        /* Make the header row sticky */
+        #assetTable thead th {
+            position: sticky;
+            top: 0;
+            z-index: 2; /* Ensure it stays above the rows */
+            background-color: #f4f4f4; /* Add a background color */
+            border-bottom: 2px solid #ddd; /* Styling for the bottom border */
+            padding: 8px;
+            text-align: left;
+        }
+
+        /* Container for the table with scrolling */
+        .table-container {
+            max-height: 400px; /* Limit the height for vertical scrolling */
+            overflow: auto; /* Enable both horizontal and vertical scrolling */
+            border: 1px solid #ddd;
+            position: relative;
+            max-width: 100%;
+            overflow-x: auto; /* Enables horizontal scrolling */
+            white-space: nowrap
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #assetTable thead th {
+                font-size: 12px;
+            }
+            #assetTable tbody td {
+                font-size: 12px;
+                padding: 6px;
+            }
+        }
+
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-in-use {
+            background: #dbeafe;
+            color:  #001B2E;
+        }
+
+        .status-available {
+            background: #dcfce7;
+            color: #22c55e;
+        }
+
+        .status-maintenance {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+        .availability {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .available {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #28a745;
+            box-shadow: 0 0 3px rgba(40, 167, 69, 0.2),
+                        0 0 4px rgba(40, 167, 69, 0.1);
+        }
+
+        .in-use {
+            background-color: #cce5ff;
+            color:  #001B2E;
+            border: 1px solid #4299e1;
+            box-shadow: 0 0 3px rgba(66, 153, 225, 0.2),
+                        0 0 4px rgba(66, 153, 225, 0.1);
+        }
+        .asset-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        /* Adding new styles for export modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+      
+        .export-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-section {
+            border: 1px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .filter-section h3 {
+            margin-bottom: 1rem;
+            color: #1e40af;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .export-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .filter-row select, .filter-row input {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .add-filter-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #1e40af;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        .warranty-active {
+        color: green;
+        font-weight: bold;
+    }
+
+    .warranty-expired {
+        color: red;
+        font-weight: bold;
+    }
+    td, th {
+    word-wrap: break-word;
+    word-break: break-word;
+    max-width: 100px; /* or whatever width fits best */
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+          
+        /*request button css*/    
+        .request-btn {
+            background-color: #000;
+            color: #fff;
+            border: 2px solid #001B2E;
+            border-radius: 5px;;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .request-btn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #001B2E;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .request-btn:hover::before {
+            opacity: 0.3;
+            box-shadow: 0 0 10px #00487b, 0 0 20px #00487b 0 0 40px #00487b;
+        }
+        /* Modal Container */
+            /* Modal Styles */
+        .request-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay for focus */
+        }
+
+        /* Modal Content */
+        .request-modal-content {
+            background: #fff;
+            margin: 10% auto;
+            padding: 25px;
+            width: 40%;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            text-align: center;
+        }
+
+        /* Close Button */
+        .request-close {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #001B2E;
+            font-weight: bold;
+        }
+
+        .request-close:hover {
+            color: #ff0000;
+        }
+
+        /* Form Layout */
+        .request-modal-content form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+
+        /* Label & Input Row */
+        .request-field {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        /* Label */
+        .request-field label {
+            flex: 1;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Input Fields */
+        .request-field input,
+        .request-field textarea {
+            flex: 2;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .request-field input:focus,
+        .request-field textarea:focus {
+            border-color: #007BFF;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        /* Readonly Input */
+        .request-field input[readonly] {
+            background-color: #f3f3f3;
+            cursor: not-allowed;
+        }
+
+        /* Textarea */
+        .request-field textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        /* Submit Button */
+        .request-modal-content button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out;
+        }
+
+        .request-modal-content button:hover {
+            background: #0056b3;
+        }
+
+
+
+        
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="/media/assets/images/logo.svg" alt="Logo" style="width: 24px; height: 24px;">
+                <span>Asset User</span>
+              </div>
+            <a href="{% url 'user_dashboard' %}" class="menu-item">
+                <div>Dashboard</div>
+            </a>
+            <a href="{% url 'User_Asset_Inventory' %}" class="menu-item active">
+                <div>Asset Inventory</div>
+            </a>
+            <a href="{% url 'user_asset_requests' %}" class="menu-item ">
+                <div>Asset Requests</div>
+            </a>
+            
+        </div>
+        
+        <div class="main-content">
+            <div class="header">
+                <h1>Asset Inventory</h1>
+                <div class="user-info" onclick="openLogoutModal()">
+                    <span class="user-name">{{ user.username }}</span>
+                    <div class="user-avatar">
+                        {{ user.email.0|upper }}{{ user.email.1|lower }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Logout Pop-up Modal -->
+            <div id="logoutModal" class="logout-modal">
+                <div class="logout-modal-content">
+                    <p>Are you sure you want to logout?</p>
+                    <div class="logout-modal-buttons">
+                        <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                        <button onclick="closeLogoutModal()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            
+            
+            
+            <div class="inventory-controls">
+                <input type="text" placeholder="Search assets..." class="search-box" id='searchBox'>
+                <select class="filter-select" id="typeFilter">
+                    <option value="all">All Types</option>
+                    {% for type in asset_types %}
+                        <option value="{{ type }}">{{ type }}</option>
+                    {% endfor %}
+                </select>
+                <select class="filter-select" id="categoryFilter">
+                    <option value="all">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+                <select class="filter-select" id="Availability-Filter">
+                    <option value="all" >All Status</option>
+                    <option>In Use</option>
+                    <option>Available</option>
+                </select>
+                <div class="column-selector">
+                   
+                    <button class="btn btn-primary" onclick="openModal()">Select Columns</button>
+
+                <!-- Modal Structure -->
+                    <div id="columnModal" class="modal">
+                        <div class="modal-content">
+                            <span class="close" onclick="closeModal()">&times;</span>
+                            <h3>Select Columns</h3>
+                            <div class="column-list">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-id" checked onchange="toggleColumn('AssetID')">
+                            <label for="col-asset-id">Asset ID</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-name" checked onchange="toggleColumn('AssetName')">
+                            <label for="col-asset-name">Asset Name</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-category" checked onchange="toggleColumn('Category')">
+                            <label for="col-category">Category</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-number"  onchange="toggleColumn('AssetNumber')">
+                            <label for="col-asset-number">Asset Number</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-serial-number" onchange="toggleColumn('SerialNumber')">
+                            <label for="col-serial-number">Serial Number</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-part-number"  onchange="toggleColumn('PartNumber')">
+                            <label for="col-part-number">Part Number</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-model" onchange="toggleColumn('AssetModel')">
+                            <label for="col-asset-model">Asset Model</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-type"  onchange="toggleColumn('AssetType')">
+                            <label for="col-asset-type">Asset Type</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-status" checked onchange="toggleColumn('AssetStatus')">
+                            <label for="col-asset-status">Asset Status</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-Availability"  onchange="toggleColumn('AssetAvailability')">
+                            <label for="col-asset-Availability">Availability</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-warehouse"  onchange="toggleColumn('Warehouse')">
+                            <label for="col-warehouse">Warehouse</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-location" onchange="toggleColumn('Location')">
+                            <label for="col-location">Location</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-provider" onchange="toggleColumn('AssetProvider')">
+                            <label for="col-asset-provider">Asset Provider</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-asset-classification" onchange="toggleColumn('AssetClassification')">
+                            <label for="col-asset-classification">Asset Classification</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-purchase-date" onchange="toggleColumn('PurchaseDate')">
+                            <label for="col-purchase-date">Purchase Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-cost"  onchange="toggleColumn('Cost')">
+                            <label for="col-cost">Cost</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-warranty" checked onchange="toggleColumn('Warranty')">
+                            <label for="col-warranty" >Warranty</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-bond-expiry-date"  onchange="toggleColumn('BondExpiryDate')">
+                            <label for="col-bond-expiry-date">Bond Expiry Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-specification"  onchange="toggleColumn('Specification')">
+                            <label for="col-specification">Specification</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-requires-calibration"  onchange="toggleColumn('RequiresCalibration')">
+                            <label for="col-requires-calibration">Requires Calibration</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-last-calibration-date"  onchange="toggleColumn('LastCalibrationDate')">
+                            <label for="col-last-calibration-date">Last Calibration Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-calibration-author"  onchange="toggleColumn('CalibrationAuthor')">
+                            <label for="col-calibration-author">Calibration Author</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-calibration-notes"  onchange="toggleColumn('CalibrationNotes')">
+                            <label for="col-calibration-notes">Calibration Notes</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-calibration-interval"  onchange="toggleColumn('CalibrationInterval')">
+                            <label for="col-calibration-interval">Calibration Interval</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-next-calibration-date"  onchange="toggleColumn('NextCalibrationDate')">
+                            <label for="col-next-calibration-date">Next Calibration Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-document-path"  onchange="toggleColumn('DocumentPath')">
+                            <label for="col-document-path">Document Path</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-upload-date" onchange="toggleColumn('UploadDate')">
+                            <label for="col-upload-date">Upload Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-image-path"  onchange="toggleColumn('ImagePath')">
+                            <label for="col-image-path">Image</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-last-maintenance-date" onchange="toggleColumn('LastMaintenanceDate')">
+                            <label for="col-last-maintenance-date">Last Maintenance Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-maintenance-interval"  onchange="toggleColumn('MaintenanceInterval')">
+                            <label for="col-maintenance-interval">Maintenance Interval</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-maintenance-notes" onchange="toggleColumn('MaintenanceNotes')">
+                            <label for="col-maintenance-notes">Maintenance Notes</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-next-maintenance-date"  onchange="toggleColumn('NextMaintenanceDate')">
+                            <label for="col-next-maintenance-date">Next Maintenance Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-software-version" onchange="toggleColumn('SoftwareVersion')">
+                            <label for="col-software-version">Software Version</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-renew-date" onchange="toggleColumn('RenewDate')">
+                            <label for="col-renew-date">Renew Date</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="col-actions" checked onchange="toggleColumn('actions')">
+                            <label for="col-actions">Actions</label>
+                        </div>
+
+                    </div>
+                  </div>
+                </div>
+                <button class="btn btn-primary" type="button" onclick="openExportModal()">Export Assets</button>
+
+            </div>
+            <div class="inventory-table">
+                <div class="table-container">
+                <table id="assetTable">
+                    <thead>
+                        <tr>
+                            <th data-column="AssetID">Asset ID</th>
+                            <th data-column="AssetName">Asset Name</th>
+                            <th data-column="Category">Category</th>
+                            <th data-column="AssetNumber">Asset Number</th>
+                            <th data-column="SerialNumber">Serial Number</th>
+                            <th data-column="PartNumber">Part Number</th>
+                            <th data-column="AssetModel">Asset Model</th>
+                            <th data-column="AssetType">Asset Type</th>
+                            <th data-column="AssetStatus">Asset Status</th>
+                            <th data-column="AssetAvailability">Availability</th>
+                            <th data-column="Warehouse">Warehouse</th>
+                            <th data-column="Location">Location</th>
+                            <th data-column="AssetProvider">Asset Provider</th>
+                            <th data-column="AssetClassification">Asset Classification</th>
+                            <th data-column="PurchaseDate">Purchase Date</th>
+                            <th data-column="Cost">Cost</th>
+                            <th data-column="Warranty" >Warranty</th>
+                            <th data-column="BondExpiryDate">Bond Expiry Date</th>
+                            <th data-column="Specification">Specification</th>
+                            <th data-column="RequiresCalibration">Requires Calibration</th>
+                            <th data-column="LastCalibrationDate">Last Calibration Date</th>
+                            <th data-column="CalibrationAuthor">Calibration Author</th>
+                            <th data-column="CalibrationNotes">Calibration Notes</th>
+                            <th data-column="CalibrationInterval">Calibration Interval</th>
+                            <th data-column="NextCalibrationDate">Next Calibration Date</th>
+                            <th data-column="DocumentPath">Document Path</th>
+                            <th data-column="UploadDate">Upload Date</th>
+                            <th data-column="ImagePath">Image </th>
+                            <th data-column="LastMaintenanceDate">Last Maintenance Date</th>
+                            <th data-column="MaintenanceInterval">Maintenance Interval</th>
+                            <th data-column="MaintenanceNotes">Maintenance Notes</th>
+                            <th data-column="NextMaintenanceDate">Next Maintenance Date</th>
+                            <th data-column="SoftwareVersion">Software Version</th>
+                            <th data-column="RenewDate">Renew Date</th>
+                            <th data-column="actions">Actions 
+                               
+                            </th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for assets in assets %}
+                        <tr>
+                            <td data-column="AssetID">{{assets.AssetID}}</td>
+                            <td data-column="AssetName">{{assets.AssetName}}</td>
+                            <td data-column="Category">{{assets.Category}}</td>
+                            <td data-column="AssetNumber">{{assets.AssetNumber}}</td>
+                            <td data-column="SerialNumber">{{assets.SerialNumber}}</td>
+                            <td data-column="PartNumber">{{assets.PartNumber}}</td>
+                            <td data-column="AssetModel">{{assets.AssetModel}}</td>
+                            <td data-column="AssetType">{{assets.AssetType}}</td>
+                            <td data-column="AssetStatus">{{assets.AssetStatus}}</td>
+                            <td data-column="Warehouse">{{assets.Warehouse}}</td>
+                            <td data-column="Location">{{assets.Location}}</td>
+                            <td data-column="AssetProvider">{{assets.AssetProvider}}</td>
+                            <td data-column="AssetClassification">{{assets.AssetClassification}}</td>
+                            <td data-column="AssetAvailability">
+                                <span class="availability {% if assets.AssetAvailability == 'Available' %}available{% else %}in-use{% endif %}">
+                                  {{ assets.AssetAvailability }}
+                                </span>
+                              </td>
+                            <td data-column="PurchaseDate">{{assets.PurchaseDate}}</td>
+                            <td data-column="Cost"> ₹ {{assets.Cost}}</td>
+                            <td data-column="Warranty" class="warranty-expired">{{assets.Warranty}} Years</td>
+                            <td data-column="BondExpiryDate">{{assets.BondExpiryDate}}</td>
+                            <td data-column="Specification">{{assets.Specification}}</td>
+                            <td data-column="RequiresCalibration">{{assets.RequiresCalibration}}</td>
+                            <td data-column="LastCalibrationDate">{{assets.CalibrationID.LastCalibrationDate}}</td>
+                            <td data-column="CalibrationAuthor">{{assets.CalibrationID.CalibrationAuthority}}</td>
+                            <td data-column="CalibrationNotes">{{assets.CalibrationID.CalibrationNotes}}</td>
+                            <td data-column="CalibrationInterval">{{assets.CalibrationID.CalibrationInterval}}</td>
+                            <td data-column="NextCalibrationDate">{{assets.CalibrationID.NextCalibrationDate}}</td>
+                            <td data-column="DocumentPath">
+                               
+                                    {{ assets.DocumentID.DocumentPath }}
+                           
+                            </td>
+                            <td data-column="UploadDate">{{assets.DocumentID.UploadDate}}</td>
+                            <td data-column="ImagePath">
+                                {% if assets.ImageID and assets.ImageID.ImagePath %}
+                                    <!-- Add debug output to verify the path -->
+                                    <!-- {{ assets.ImageID.ImagePath }} -->
+                                    <img src="/media/{{ assets.ImageID.ImagePath }}" 
+                                         alt="Asset Image" 
+                                         class="asset-image"
+                                         onclick="showModal('/media/{{ assets.ImageID.ImagePath }}')"
+                                         style="cursor: pointer;">
+                                {% else %}
+                                    <img src="/media/assets/images/default.jpg" 
+                                         alt="Default Asset Image" 
+                                         class="asset-image"
+                                         onclick="showModal('/media/assets/images/default.jpg')"
+                                         style="cursor: pointer;">
+                                {% endif %}
+                            </td>
+                            
+                            <td data-column="LastMaintenanceDate">{{assets.MaintenanceID.LastMaintenanceDate}}</td>
+                            <td data-column="MaintenanceInterval">{{assets.MaintenanceID.MaintenanceInterval}}</td>
+                            <td data-column="MaintenanceNotes">{{assets.MaintenanceID.MaintenanceNotes}}</td>
+                            <td data-column="NextMaintenanceDate">{{assets.MaintenanceID.NextMaintenanceDate}}</td>
+                            <td data-column="SoftwareVersion">  {{assets.SoftwareVersion}}</td>
+                            <td data-column="RenewDate">  {{assets.RenewDate}}</td>
+                            <!-- Request Button inside the Asset Table -->
+                            <td>
+                                <button class="request-btn" onclick="openRequestModal(this)" 
+                                        data-asset-id="{{ assets.AssetID }}" 
+                                        data-asset-name="{{ assets.AssetName}}"
+                                        data-user-id="{{ user.UserId }}"
+                                        data-user-name="{{user.username}}">
+                                    Request
+                                </button>
+                            </td>
+
+                            <!-- Modal for Asset Request -->
+                            <div id="requestModal" class="request-modal">
+                                <div class="request-modal-content">
+                                    <span class="request-close" onclick="closeRequestModal()">&times;</span>
+                                    <h2>Request Asset</h2>
+                                    <form id="requestForm" method="post" action="{% url 'submit_request' %}">
+                                        {% csrf_token %}
+                                    
+                                        <div class="request-field">
+                                            <label for="user_id">User Name:</label>
+                                            <input id="user_name" name="username" readonly>
+                                        </div>
+                                        <div class="request-field">
+                                            <input id="user_id" name="userId"  type="hidden">
+                                        </div>
+                                        <div class="request-field">
+                                            <input  id="asset_id" name="assetID" type="hidden">
+                                        </div>
+                                        <div class="request-field">
+                                            <label for="asset_name">Asset Name:</label>
+                                            <input id="asset_name" name="assetname" readonly >
+                                        </div>
+                                    
+                                        <div class="request-field">
+                                            <label for="start_date">Start Date:</label>
+                                            <input type="date" id="start_date" name="start_date" required>
+                                        </div>
+                                    
+                                        <div class="request-field">
+                                            <label for="end_date">End Date:</label>
+                                            <input type="date" id="end_date" name="end_date" required>
+                                        </div>
+                                    
+                                        <div class="request-field">
+                                            <label for="purpose">Purpose:</label>
+                                            <textarea id="purpose" name="purpose" required></textarea>
+                                        </div>
+                                    
+                                        <button type="submit">Submit Request</button>
+                                    </form>
+                                    {% if messages %}
+                                    <script>
+                                        window.onload = function () {
+                                            {% for message in messages %}
+                                                alert("{{ message }}");
+                                            {% endfor %}
+                                        };
+                                    </script>
+                                    {% endif %}
+                                    
+                                </div>
+                            </div>
+
+
+                            
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+    </div>
+    
+    
+
+    <div id="imageModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <span class="custom-modal-close" onclick="hideModal()">&times;</span>
+            <img id="modalImage" src="" alt="Image Preview" style="max-width: 100%; height: auto;">
+        </div>
+    </div>
+    <div id="docModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <iframe id="docViewer" src="" width="100%" height="500px"></iframe>
+        </div>
+    </div>
+    
+    <!-- Add Export Modal -->
+    <!-- Export Modal -->
+    <form id="exportForm" method="POST" action="{% url 'export_assets' %}">
+        {% csrf_token %}
+        <div id="exportModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Export Assets</h2>
+                </div>
+                <div class="export-filters">
+                    <!-- Asset Types Section -->
+                    <div class="filter-section">
+                        <h3>Asset Types</h3>
+                        <div class="checkbox-grid">
+                            {% for category in categories %}
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="AssetType" value="{{ category }}"> {{ category }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+    
+                    <!-- Fields to Export Section -->
+                    <div class="filter-section">
+                        <h3>Fields to Export</h3>
+                        <div class="checkbox-grid">
+                            {% for field, label in fields_with_labels %}
+                                <label class="checkbox-item">
+                                    <input type="checkbox" name="fields" value="{{ field }}"> {{ label }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+    
+                    <!-- Export Format Section -->
+                    <input type="hidden" name="export_format" value="csv">
+                </div>
+                <div class="export-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeExportModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Export</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Ensure the modal is hidden when the page loads
+            document.getElementById("logoutModal").style.display = "none";
+        });
+
+        // Open modal when avatar or username is clicked
+        function openLogoutModal() {
+            document.getElementById("logoutModal").style.display = "flex"; // Show modal
+        }
+
+        // Close modal when user clicks outside the modal content
+        function closeLogoutModal() {
+            document.getElementById("logoutModal").style.display = "none"; // Hide modal
+        }
+
+        // Close logout modal if user clicks outside the modal box
+        window.onclick = function(event) {
+            let logoutModal = document.getElementById("logoutModal");
+            // Check if the click happened outside of the modal content (to close it)
+            if (event.target === logoutModal) {
+                logoutModal.style.display = "none"; // Close modal
+            }
+        }
+
+
+
+
+
+
+        function showModal(imageSrc) {
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        
+        modalImage.src = imageSrc;
+        modal.style.display = 'block';
+        
+        // Add show class after a brief delay to trigger transition
+        setTimeout(() => {
+            modal.classList.add('show');
+                }, 10);
+            }
+
+        function hideModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+            
+            // Wait for transition to complete before hiding
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        // Close modal when clicking outside the image
+        document.getElementById('imageModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                hideModal();
+            }
+        });
+
+        // Prevent modal from closing when clicking the image itself
+        document.getElementById('modalImage').addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+
+ 
+        function sortTable(columnIndex, isAscending) {
+        const tableBody = document.querySelector("#assetTable tbody");
+        const rows = Array.from(tableBody.rows);
+
+        rows.sort((a, b) => {
+            const aText = a.cells[columnIndex].textContent.trim();
+            const bText = b.cells[columnIndex].textContent.trim();
+            return isAscending
+                ? aText.localeCompare(bText, undefined, { numeric: true })
+                : bText.localeCompare(aText, undefined, { numeric: true });
+        });
+
+        rows.forEach(row => tableBody.appendChild(row));
+        }
+
+        // Add event listener to the "Asset ID" header
+        document.querySelector("th:nth-child(1)").addEventListener("click", function () {
+            const isAscending = !this.classList.contains("ascending");
+            sortTable(0, isAscending);
+            document.querySelectorAll("th").forEach(th => th.classList.remove("ascending", "descending"));
+            this.classList.add(isAscending ? "ascending" : "descending");
+        });
+        document.getElementById('typeFilter').addEventListener('change', function () {
+            const selectedType = this.value; // Get the selected asset type
+            const rows = document.querySelectorAll('#assetTable tbody tr'); // Get all rows in the table
+
+            rows.forEach(row => {
+                const typeCell = row.querySelector('[data-column="AssetType"]'); // Find the cell containing the asset type
+                const type = typeCell ? typeCell.textContent.trim() : ''; // Extract the asset type text
+                const typeMatch = selectedType === 'all' || type.toLowerCase() === selectedType.toLowerCase(); // Check if it matches
+
+                row.style.display = typeMatch ? '' : 'none'; // Show or hide the row based on the match
+            });
+        });
+        document.getElementById('categoryFilter').addEventListener('change', function () {
+        const selectedCategory = this.value;
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const category = row.querySelector('[data-column="Category"]').textContent.trim();
+
+            if (selectedCategory === 'all' || category === selectedCategory) {
+                row.style.display = ''; // Show the row
+            } else {
+                row.style.display = 'none'; // Hide the row
+                }
+            });
+        });
+        document.getElementById('Availability-Filter').addEventListener('change', function () {
+        const selectedCategory = this.value;
+        const rows = document.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const category = row.querySelector('[data-column="AssetAvailability"]').textContent.trim();
+
+            if (selectedCategory === 'all' || category === selectedCategory) {
+                row.style.display = ''; // Show the row
+            } else {
+                row.style.display = 'none'; // Hide the row
+                }
+            });
+        });
+            function openModal() {
+            document.getElementById("columnModal").style.display = "block";
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById("columnModal").style.display = "none";
+        }
+
+        // Handle column selection changes
+        function toggleColumn(columnName) {
+            const table = document.getElementById('assetTable');
+            const cells = table.querySelectorAll(`[data-column="${columnName}"]`);
+            
+            // Toggle visibility of cells
+            cells.forEach(cell => {
+                cell.style.display = cell.style.display === 'none' ? '' : 'none';
+            });
+
+            // Trigger a reflow to ensure the table layout updates
+            table.offsetHeight;
+
+            // Optionally, reset the scroll position if needed
+            const container = table.parentElement;
+            container.scrollLeft = 0;
+        }
+        
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById("columnModal");
+            if (event.target == modal) {
+            closeModal();
+            }
+        };
+        document.getElementById('searchBox').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#assetTable tbody tr');
+            
+            rows.forEach(row => {
+                // Search across multiple columns
+                const searchableColumns = [
+                    'AssetID',
+                    'AssetName',
+                    'Category',
+                    'AssetNumber',
+                    'SerialNumber',
+                    'PartNumber',
+                    'AssetModel',
+                    'AssetType',
+                    'AssetStatus',
+                    'Warehouse',
+                    'Location',
+                    'AssetProvider',
+                    'AssetClassification',
+                    'PurchaseDate',
+                    'Cost',
+                    'Warranty',
+                    'BondExpiryDate',
+                    'Specification',
+                    'RequiresCalibration',
+                    'LastCalibrationDate',
+                    'CalibrationAuthor',
+                    'CalibrationNotes',
+                    'CalibrationInterval',
+                    'NextCalibrationDate',
+                    'DocumentPath',
+                    'UploadDate',
+                    'ImagePath',
+                    'LastMaintenanceDate',
+                    'MaintenanceInterval',
+                    'MaintenanceNotes',
+                    'NextMaintenanceDate',
+                    'VendorName',
+                    'VendorContact',
+                    'VendorNotes',
+                ];
+                
+                const isMatch = searchableColumns.some(columnName => {
+                    const cell = row.querySelector(`[data-column="${columnName}"]`);
+                    return cell && cell.textContent.toLowerCase().includes(searchTerm);
+                });
+                
+                // Toggle row visibility based on search match
+                row.style.display = isMatch || searchTerm === '' ? '' : 'none';
+            });
+        });
+       
+
+        // Function to check warranty status
+                function checkWarrantyStatus() {
+                const rows = document.querySelectorAll('#assetTable tbody tr');
+                
+                rows.forEach(row => {
+                    const purchaseDateCell = row.querySelector('[data-column="PurchaseDate"]');
+                    const warrantyCell = row.querySelector('[data-column="Warranty"]');
+                    
+                    if (purchaseDateCell && warrantyCell) {
+                        const purchaseDate = new Date(purchaseDateCell.textContent);
+                        const warrantyYears = parseInt(warrantyCell.textContent);
+                        const warrantyEndDate = new Date(purchaseDate);
+                        warrantyEndDate.setFullYear(warrantyEndDate.getFullYear() + warrantyYears);
+                        
+                        if (warrantyEndDate < new Date()) {
+                            warrantyCell.classList.remove('warranty-active');
+                            warrantyCell.classList.add('warranty-expired');
+                        } else {
+                            warrantyCell.classList.remove('warranty-expired');
+                            warrantyCell.classList.add('warranty-active');
+                        }
+                    }
+                });
+            }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default visible columns
+            const columns = document.querySelectorAll('th[data-column]');
+            const defaultColumns = ['AssetID', 'AssetName', 'Category', 'AssetStatus', 'Warranty', 'VendorName', 'actions'];
+    
+            columns.forEach(column => {
+                const columnName = column.getAttribute('data-column');
+                if (!defaultColumns.includes(columnName)) {
+                    toggleColumn(columnName);
+                }
+            });
+    
+        
+            checkWarrantyStatus();
+            // Close vendor modal when clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('vendorModal');
+                if (event.target === modal) {
+                    closeVendorModal();
+                }
+            };
+        });
+
+                document.getElementById('filter').addEventListener('change', function () {
+                    const selectedValue = this.value;
+                    const items = document.querySelectorAll('.item');
+
+                    items.forEach(item => {
+                        if (selectedValue === 'all' || item.getAttribute('data-type') === selectedValue) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+
+                // Initialize event listeners when the DOM is loaded
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Find the export button specifically by looking for the text content
+                    const exportButton = Array.from(document.querySelectorAll('.btn.btn-primary'))
+                        .find(button => button.textContent.trim() === 'Export List');
+                    
+                    if (exportButton) {
+                        exportButton.addEventListener('click', openExportModal);
+                    }
+                });
+
+                // Open modal
+            function openExportModal() {
+                document.getElementById('exportModal').style.display = 'block';
+            }
+
+            // Close modal
+            function closeExportModal() {
+                document.getElementById('exportModal').style.display = 'none';
+            }
+
+            // Handle form submission using AJAX
+            document.getElementById('exportForm').addEventListener('submit', function(event) {
+                event.preventDefault();  // Prevent normal form submission
+
+                var formData = new FormData(this);
+                
+                // Open a loading indicator or something similar if needed
+
+                // Make an AJAX request to submit the form data
+                fetch("{% url 'export_assets' %}", {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.blob();  // Get the exported file as a blob
+                    } else {
+                        alert('Error exporting data');
+                    }
+                })
+                .then(blob => {
+                    // Create a download link and trigger it to download the file
+                    const link = document.createElement('a');
+                    const fileName = "exported_assets";  // You can change this based on your format
+                    const extension = document.querySelector("select[name='export_format']").value;
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `${fileName}.${extension}`;
+                    link.click();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while exporting.');
+                });
+            });
+            function openRequestModal(button) {
+                let assetID = button.getAttribute("data-asset-id");
+                let userId = button.getAttribute("data-user-id");
+                let assetname = button.getAttribute("data-asset-name");
+                let username= button.getAttribute("data-user-name");
+                document.getElementById("asset_id").value = assetID;
+                document.getElementById("user_id").value = userId;
+                document.getElementById("asset_name").value = assetname;
+                document.getElementById("user_name").value = username;
+                
+                document.getElementById("requestModal").style.display = "block";
+            }
+
+            function closeRequestModal() {
+                document.getElementById("requestModal").style.display = "none";
+            }
+            
+
+
+    </script>
+</body>
+</html>
+

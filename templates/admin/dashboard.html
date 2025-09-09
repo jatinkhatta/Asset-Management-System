@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Management - Dashboard</title>
+    <script src="/static/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #1e40af;
+            color: white;
+            padding: 2rem 0;
+        }
+        .sidebar a {
+            text-decoration: none; /* Removes underline */
+            color: inherit; /* Ensures the text color is inherited */
+            display: block; /* Makes the link span the full width of the div */
+        }
+
+
+        .logo {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .menu-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+
+        .menu-item:hover {
+            background: #1e3a8a;
+        }
+
+        .menu-item.active {
+            background: #1e3a8a;
+            border-left: 4px solid white;
+        }
+
+        .main-content {
+            flex: 1;
+            background: #f0f5ff;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between avatar and username */
+        }
+
+        .user-avatar {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background-color: #1e40af;
+            color: white;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .user-name {
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+        /* Logout Modal Background */
+        .logout-modal {
+            display: none; /* Modal should be hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Dark Overlay */
+            z-index: 1000;
+            display: flex; /* Flexbox layout to center the modal */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+        }
+
+        /* Logout Modal Box */
+        .logout-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Logout Modal Buttons */
+        .logout-modal-buttons {
+            margin-top: 15px;
+        }
+
+        .logout-btn {
+            background-color: #1e40af;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .logout-btn:hover {
+            background-color: #162d79;
+        }
+
+        .cancel-btn {
+            background-color: #ccc;
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel-btn:hover {
+            background-color: #bbb;
+        }
+
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .stat-card {
+            
+            background: #1e3a8a;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            cursor: help;
+            overflow: hidden;
+        }
+
+        .stat-card h3 {
+            color: rgb(206, 205, 205);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fafafa;
+            position: relative;
+            z-index: 2;
+        }
+
+        .percentage-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background-color: rgb(162, 193, 246);
+            z-index: 1;
+        }
+
+        .percentage-bar-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+           
+            background-color: #3b82f6;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .percentage-text {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 0.8rem;
+            transition: bottom 0.3s ease-in-out;
+        }
+
+        .stat-card:hover .percentage-text {
+            bottom: 5px;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            
+            max-height: 450px; /* Ensure charts don't stretch too much */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        canvas {
+            min-height: 250px;
+            max-height: 350px !important;
+        }
+
+        .filter-container {
+            margin-bottom: 1.5rem;
+            width: 100%;
+            display: flex;
+            align-items: center;    
+            gap: 1rem;
+        }
+
+        .filter-label {
+            font-size: 0.9rem;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .category-filter {
+            padding: 0.5rem 2.5rem 0.5rem 1rem;
+            font-size: 0.9rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background-color: white;
+            color: #1e40af;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231e40af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .category-filter:hover {
+            border-color: #1e40af;
+        }
+
+        .category-filter:focus {
+            outline: none;
+            border-color: #1e40af;
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        /* Update chart container to accommodate filter */
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: start; /* Changed from center to start */
+            gap: 1rem;
+        }
+
+        .chart-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e40af;
+            margin: 0;
+        }
+        /* Add these styles to your existing CSS in the <style> tag */
+
+.provider-table-container {
+    margin-top: 2rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 1.5rem;
+}
+
+.table-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1e40af;
+    margin: 0;
+}
+
+.provider-tables {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.provider-table {
+    flex: 1;
+}
+
+.provider-table h4 {
+    color: #1e40af;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table th {
+    background-color: #f0f5ff;
+    font-weight: 600;
+    color: #1e40af;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.data-table tfoot td {
+    font-weight: 600;
+    background-color: #f0f5ff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .provider-tables {
+        grid-template-columns: 1fr;
+    }
+}
+.alert-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 0.2rem 0.5rem;
+    background-color: #ef4444; /* Red background */
+    color: white; /* White text */
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 9999px; /* Fully rounded corners */
+    line-height: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+        
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="/media/assets/images/logo.svg" alt="Logo" style="width: 24px; height: 24px;">
+                <span>Asset Manager</span>
+              </div>
+            <a href="{% url 'dashboard' %}" class="menu-item active">
+                <div>Dashboard</div>
+            </a>
+            <a href="{% url 'Asset Inventory' %}" class="menu-item">
+                <div>Asset Inventory</div>
+            </a>
+            <a href="{% url 'Add Asset' %}" class="menu-item">
+                <div>Add Asset</div>
+            </a>
+            <a href="{% url 'Alerts' %}" class="menu-item {% if request.resolver_match.url_name == 'Alerts' %}active{% endif %}">
+                <div>
+                    Alerts
+                    <!-- New Alert Badge -->
+                    {% if total_new_alerts > 0 %}
+                        <span class="alert-badge">{{ total_new_alerts }}</span>
+                    {% endif %}
+                </div>
+            </a>
+            <a href="{% url 'MaintenancePage' %}" class="menu-item ">
+                <div>Maintenance</div>
+            </a>
+            <a href="{% url 'asset_request_tracking' %}" class="menu-item">
+                <div>Asset Requests</div>
+            </a>
+            <a href="{% url 'Reports' %}" class="menu-item">
+                <div>Reports</div>
+            </a>
+            <a href="{% url 'user_management' %}" class="menu-item ">
+                <div>Users</div>
+            </a>
+        </div>
+        
+        <div class="main-content">
+            <div class="header">
+                    <h1>Admin Dashboard</h1>
+                    <div class="user-info" onclick="openLogoutModal()">
+                        <span class="user-name">{{ user.username }}</span>
+                        <div class="user-avatar">
+                            {{ user.email.0|upper }}{{ user.email.1|lower }}
+                        </div>
+                    </div>
+               
+                
+                <!-- Logout Pop-up Modal -->
+                <div id="logoutModal" class="logout-modal">
+                    <div class="logout-modal-content">
+                        <p>Are you sure you want to logout?</p>
+                        <div class="logout-modal-buttons">
+                            <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                            <button onclick="closeLogoutModal()" class="cancel-btn">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="stats-grid">
+                
+                <div class="stat-card" id="totalAssetsCard">
+                    <h3>Total Assets</h3>
+                    <p>{{ total_assets }}</p>
+                </div>
+                <div class="stat-card" id="bondedAssetsCard">
+                    <h3>Bond Type</h3>
+                    <div class="bond-type-stats">
+                        <div class="bond-type-item">
+                            <span class="bond-label">Bonded:</span>
+                            <span class="bond-value">{{ bonded_assets }}</span>
+                        </div>
+                        <div class="bond-type-item">
+                            <span class="bond-label">Non-Bonded:</span>
+                            <span class="bond-value">{{ non_bonded_assets }}</span>
+                        </div>
+                    </div>
+                    <div class="percentage-bar">
+                        <div class="percentage-bar-fill" id="bondedAssetsPercentageFill"></div>
+                    </div>
+                    <div class="percentage-text" id="bondedAssetsPercentage"></div>
+                </div>
+                <div class="stat-card" id="assetTypeCard">
+                    <h3>Asset Type</h3>
+                    <div class="asset-type-stats">
+                        <div class="asset-type-item">
+                            <span class="asset-label">Hardware:</span>
+                            <span class="asset-value">{{ hardware_assets }}</span>
+                        </div>
+                        <div class="asset-type-item">
+                            <span class="asset-label">Software:</span>
+                            <span class="asset-value">{{ software_assets }}</span>
+                        </div>
+                    </div>
+                    <div class="percentage-bar">
+                        <div class="percentage-bar-fill" id="hardwareAssetsPercentageFill"></div>
+                    </div>
+                    <div class="percentage-text" id="hardwareAssetsPercentage"></div>
+                </div>
+                <div class="stat-card" id="inUseAssetsCard">
+                    <h3>In Use</h3>
+                    <p>{{ in_use_assets }}</p>
+                    <div class="percentage-bar">
+                        <div class="percentage-bar-fill" id="inUseAssetsPercentageFill"></div>
+                    </div>
+                    <div class="percentage-text" id="inUseAssetsPercentage"></div>
+                </div>
+                <div class="stat-card" id="availableAssetsCard">
+                    <h3>Available</h3>
+                    <p>{{ available_assets }}</p>
+                    <div class="percentage-bar">
+                        <div class="percentage-bar-fill" id="availableAssetsPercentageFill"></div>
+                    </div>
+                    <div class="percentage-text" id="availableAssetsPercentage"></div>
+                </div>
+                <div class="stat-card" id="maintenanceAssetsCard">
+                    <h3>Maintenance</h3>
+                    <p>{{ under_maintenance_assets }}</p>
+                    <div class="percentage-bar">
+                        <div class="percentage-bar-fill" id="maintenanceAssetsPercentageFill"></div>
+                    </div>
+                    <div class="percentage-text" id="maintenanceAssetsPercentage"></div>
+                </div>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                       
+                        <h3 class="chart-title">Asset Distribution</h3>
+                    </div>
+                    <canvas id="assetDistribution"></canvas>
+                </div>
+            
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Monthly Asset Usage</h3>
+                        <div class="filter-container">
+                            <label for="category-filter" class="filter-label">Filter by:</label>
+                            <select id="category-filter" class="category-filter">
+                                <option value="all">All Categories</option>
+                                {% for category in asset_categories %}
+                                    <option value="{{ category }}">{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <canvas id="monthlyUsage"></canvas>
+                </div>
+            </div>
+            <div class="provider-table-container">
+                <div class="table-header">
+                    <h3 class="table-title">Asset Provider Distribution</h3>
+                </div>
+                <div class="provider-tables">
+                    <!-- Provider Summary Table -->
+                    <div class="provider-table">
+                        <h4>Provider Summary</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Provider</th>
+                                    <th>Asset Count</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for provider in provider_distribution %}
+                                <tr>
+                                    <td>{{ provider.AssetProvider }}</td>
+                                    <td>{{ provider.count }}</td>
+                                    <td>{{ provider.percentage }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td><strong>Total</strong></td>
+                                    <td><strong>{{ total_assets }}</strong></td>
+                                    <td>100%</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <!-- Detailed Provider Distribution Table -->
+                    <div class="provider-table">
+                        <h4>Provider by Asset Type</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Provider</th>
+                                    <th>Hardware</th>
+                                    <th>Software</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for provider, counts in provider_type_distribution.items %}
+                                <tr>
+                                    <td>{{ provider }}</td>
+                                    <td>{{ counts.Hardware }}</td>
+                                    <td>{{ counts.Software }}</td>
+                                    <td>{{ counts.Total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <script> document.addEventListener("DOMContentLoaded", function() {
+        // Initialize the stats percentages
+        initializeStats();
+        
+        // Fetch chart data from API
+        fetchChartData();
+        
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Initialize the logout modal behavior
+        initializeLogoutModal();
+    });
+
+    function initializeStats() {
+        const totalAssets = {{ total_assets }};
+        const inUseAssets = {{ in_use_assets }};
+        const availableAssets = {{ available_assets }};
+        const maintenanceAssets = {{ under_maintenance_assets }};
+        const bondedAssets = {{ bonded_assets }};
+        const nonBondedAssets = {{ non_bonded_assets }};
+        const hardwareAssets = {{ hardware_assets }};
+        const softwareAssets = {{ software_assets }};
+
+        // Update percentage elements and bar fills
+        updatePercentageBar('inUseAssetsCard', 'inUseAssetsPercentage', 'inUseAssetsPercentageFill', inUseAssets, totalAssets);
+        updatePercentageBar('availableAssetsCard', 'availableAssetsPercentage', 'availableAssetsPercentageFill', availableAssets, totalAssets);
+        updatePercentageBar('maintenanceAssetsCard', 'maintenanceAssetsPercentage', 'maintenanceAssetsPercentageFill', maintenanceAssets, totalAssets);
+        updatePercentageBar('bondedAssetsCard', 'bondedAssetsPercentage', 'bondedAssetsPercentageFill', bondedAssets, bondedAssets + nonBondedAssets);
+        updatePercentageBar('assetTypeCard', 'hardwareAssetsPercentage', 'hardwareAssetsPercentageFill', hardwareAssets, hardwareAssets + softwareAssets);
+    }
+
+    function updatePercentageBar(cardId, percentageId, fillId, value, total) {
+        const percentage = ((value / total) * 100).toFixed(1);
+        const percentageElement = document.getElementById(percentageId);
+        const fillElement = document.getElementById(fillId);
+        
+        if (percentageElement && fillElement) {
+            percentageElement.textContent = `${percentage}%`;
+            fillElement.style.width = `${percentage}%`;
+        }
+    }
+
+    // Global variables to store chart data and chart instances
+    let chartData = {};
+    let monthlyUsageChart;
+    let assetDistributionChart;
+
+    function fetchChartData() {
+        // Show loading indicators or placeholders if needed
+        
+        // Fetch chart data from the API endpoint
+        fetch('/api/chart-data/')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Chart Data from API:", data);
+                chartData = data;
+                
+                // Initialize charts with the fetched data
+                initializeAssetDistributionChart(data.asset_distribution);
+                initializeMonthlyUsageChart(data.monthly_usage);
+                initializeProviderTables(data.provider_distribution, data.provider_type_distribution);
+            })
+            .catch(error => {
+                console.error('Error fetching chart data:', error);
+                // Handle errors, maybe show a message to the user
+            });
+    }
+
+    function initializeAssetDistributionChart(assetData) {
+        const assetDistributionCanvas = document.getElementById('assetDistribution');
+        if (!assetDistributionCanvas) {
+            console.error("Could not find assetDistribution canvas element");
+            return;
+        }
+        
+        try {
+            assetDistributionChart = new Chart(assetDistributionCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: assetData.category_labels,
+                    datasets: [{
+                        data: assetData.category_values,
+                        backgroundColor: [
+                            '#1b304a', '#2E5077', '#3a6494', '#4678b1', '#5b8bc3',
+                            '#37777d', '#4DA1A9', '#63b7bf', '#79ccd4', '#90e0e8',
+                            '#4aae92', '#5ec1a6', '#79D7BE', '#94e3ce', '#afefde',
+                            '#d7d5d2', '#e1dfd9', '#ebebe4', '#F6F4F0', '#ffffff'
+                        ]
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 10
+                            }
+                        } 
+                    } 
+                }
+            });
+        } catch (error) {
+            console.error("Error initializing Asset Distribution chart:", error);
+        }
+    }
+
+    function initializeMonthlyUsageChart(usageData) {
+        const monthlyUsageCanvas = document.getElementById('monthlyUsage');
+        if (!monthlyUsageCanvas) {
+            console.error("Could not find monthlyUsage canvas element");
+            return;
+        }
+        
+        try {
+            monthlyUsageChart = new Chart(monthlyUsageCanvas, {
+                type: 'bar',
+                data: {
+                    labels: usageData.months,
+                    datasets: [{
+                        label: 'All Categories',
+                        data: usageData.usage_counts,
+                        backgroundColor: '#1e40af'
+                    }]
+                },
+                options: { 
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Assets in Use'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error initializing Monthly Usage chart:", error);
+        }
+    }
+
+    function setupEventListeners() {
+        // Category filter for the monthly usage chart
+        const categoryFilter = document.getElementById('category-filter');
+        if (categoryFilter) {
+            categoryFilter.addEventListener('change', function() {
+                updateMonthlyUsageChart(this.value);
+            });
+        }
+    }
+
+    function updateMonthlyUsageChart(selectedCategory) {
+        if (!monthlyUsageChart || !chartData.monthly_usage) {
+            console.error("Monthly usage chart not initialized or data not available");
+            return;
+        }
+        
+        try {
+            const usageData = chartData.monthly_usage;
+            
+            if (selectedCategory === 'all') {
+                // Update chart with all categories data
+                monthlyUsageChart.data.labels = usageData.months;
+                monthlyUsageChart.data.datasets[0].data = usageData.usage_counts;
+                monthlyUsageChart.data.datasets[0].label = 'All Categories';
+            } else {
+                // Update chart with selected category data
+                const categoryData = usageData.categories[selectedCategory];
+                if (categoryData) {
+                    monthlyUsageChart.data.labels = categoryData.months;
+                    monthlyUsageChart.data.datasets[0].data = categoryData.usage_counts;
+                    monthlyUsageChart.data.datasets[0].label = selectedCategory;
+                }
+            }
+            
+            monthlyUsageChart.update();
+        } catch (error) {
+            console.error("Error updating Monthly Usage chart:", error);
+        }
+    }
+
+    function initializeProviderTables(providerDistribution, providerTypeDistribution) {
+        // Update provider distribution table
+        const providerTableBody = document.querySelector('.provider-table:first-child .data-table tbody');
+        if (providerTableBody) {
+            providerTableBody.innerHTML = '';
+            
+            providerDistribution.forEach(provider => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${provider.AssetProvider}</td>
+                    <td>${provider.count}</td>
+                    <td>${provider.percentage}%</td>
+                `;
+                providerTableBody.appendChild(row);
+            });
+        }
+        
+        // Update provider type distribution table
+        const providerTypeTableBody = document.querySelector('.provider-table:last-child .data-table tbody');
+        if (providerTypeTableBody) {
+            providerTypeTableBody.innerHTML = '';
+            
+            for (const [provider, counts] of Object.entries(providerTypeDistribution)) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${provider}</td>
+                    <td>${counts.Hardware}</td>
+                    <td>${counts.Software}</td>
+                    <td>${counts.Total}</td>
+                `;
+                providerTypeTableBody.appendChild(row);
+            }
+        }
+    }
+
+    function initializeLogoutModal() {
+        // Ensure the modal is hidden when the page loads
+        const logoutModal = document.getElementById("logoutModal");
+        if (logoutModal) {
+            logoutModal.style.display = "none";
+            
+            // Close logout modal if user clicks outside the modal box
+            window.onclick = function(event) {
+                if (event.target === logoutModal) {
+                    logoutModal.style.display = "none";
+                }
+            };
+        }
+    }
+
+    // Open modal when avatar or username is clicked
+    function openLogoutModal() {
+        const logoutModal = document.getElementById("logoutModal");
+        if (logoutModal) {
+            logoutModal.style.display = "flex";
+        }
+    }
+
+    // Close modal when cancel button is clicked
+    function closeLogoutModal() {
+        const logoutModal = document.getElementById("logoutModal");
+        if (logoutModal) {
+            logoutModal.style.display = "none";
+        }
+    }
+    </script>
+</body>
+</html>

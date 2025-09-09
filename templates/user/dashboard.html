@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <script src="/static/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary-color: #001B2E;
+            --primary-light: #002d4a;
+            --primary-lighter: #003d66;
+            --primary-dark: #001525;
+            --accent-color: #0056b3;
+        }
+        
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: #001B2E;
+            color: white;
+            padding: 2rem 0;
+        }
+        
+        .sidebar a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .logo {
+            padding: 0 1.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .menu-item {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .menu-item:hover {
+            background: #001B2E;
+        }
+        
+        .menu-item.active {
+            background: var(--primary-light);
+            border-left: 4px solid white;
+        }
+        
+        .main-content {
+            flex: 1;
+            background: #f0f5ff;
+            padding: 2rem;
+        }
+        
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e1e8ed;
+        }
+        
+        .user-info {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-info:hover {
+            background: #e1e8ed;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color:  #001B2E;
+            color: white;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 50%;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+        
+        .user-info:hover .user-avatar {
+            transform: scale(1.1);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        /* Logout Modal Background */
+        .logout-modal {
+            display: none; /* Modal should be hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Dark Overlay */
+            z-index: 1000;
+            display: flex; /* Flexbox layout to center the modal */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+        }
+
+        /* Logout Modal Box */
+        .logout-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Logout Modal Buttons */
+        .logout-modal-buttons {
+            margin-top: 15px;
+        }
+
+        .logout-btn {
+            background-color:  #001B2E;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .logout-btn:hover {
+            background-color:  #001B2E;
+        }
+
+        .cancel-btn {
+            background-color: #ccc;
+            color: black;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel-btn:hover {
+            background-color: #bbb;
+        }
+        
+       /* General Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-family: Arial, sans-serif;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+            position: sticky; /* Make the header sticky */
+            top: 0; /* Stick to the top of the scrollable area */
+            z-index: 1; /* Ensure the header stays above the rows */
+            background-color: #f4f4f4; /* Ensure the background color covers the sticky area */
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Scrollable Table */
+        .scrollable-table {
+            max-height: 300px; /* Set a maximum height for vertical scrolling */
+            overflow-y: auto; /* Enable vertical scrolling */
+            overflow-x: auto; /* Enable horizontal scrolling */
+            display: block; /* Ensure the table is treated as a block element */
+            border: 1px solid #ddd; /* Add a border around the scrollable area */
+            width: 100%; /* Ensure the container takes up the full width */
+        }
+
+        .scrollable-table table {
+            width: auto; /* Allow the table to expand beyond the container width */
+            min-width: 100%; /* Ensure the table is at least as wide as the container */
+            border-collapse: collapse; /* Remove gaps between table cells */
+        }
+
+        .scrollable-table th,
+        .scrollable-table td {
+            white-space: nowrap; /* Prevent text wrapping in table cells */
+            padding: 8px; /* Add padding for better readability */
+            border: 1px solid #ddd; /* Add borders to table cells */
+        }
+
+        /* Status Styling */
+        .status {
+            padding: 5px 10px;
+            border-radius: 15px; /* Slightly rounded shape */
+            font-weight: bold;
+            display: inline-block;
+            text-align: center;
+            width: fit-content;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da; /* Light red background */
+            color: #721c24; /* Dark red text */
+            border: 1px solid #f5c6cb; /* Light red border */
+            box-shadow: 0 0 3px rgba(248, 215, 218, 0.2),
+                        0 0 4px rgba(248, 215, 218, 0.1);
+        }
+        .status-completed {
+    background-color: #dcfce7; /* light green */
+    color: #166534; /* deep green */
+    border: 1px solid #bbf7d0; /* minty green border */
+    box-shadow: 0 0 3px rgba(220, 252, 231, 0.2),
+                0 0 4px rgba(220, 252, 231, 0.1);
+}
+
+        .status-approved {
+            background-color: #d4edda; /* Light green background */
+            color: #155724; /* Dark green text */
+            border: 1px solid #c3e6cb; /* Light green border */
+            box-shadow: 0 0 3px rgba(212, 237, 218, 0.2),
+                        0 0 4px rgba(212, 237, 218, 0.1);
+        }
+
+        .status-surrendered {
+            background-color: #fff3cd; /* Light yellow background */
+            color: #856404; /* Dark yellow text */
+            border: 1px solid #ffeeba; /* Light yellow border */
+            box-shadow: 0 0 3px rgba(255, 243, 205, 0.2),
+                        0 0 4px rgba(255, 243, 205, 0.1);
+        }
+        .status-accepted {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.status-returned {
+    background-color: #bfdbfe;
+    color: #1e3a8a;
+    border: 1px solid #93c5fd;
+}
+
+.status-closed {
+    background-color: #fef9c3;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.status-returnrequested {
+    background-color: #ede9fe;
+    color: #6b21a8;
+    border: 1px solid #ddd6fe;
+}
+
+.status-returnaccepted {
+    background-color: #e0f2f1;
+    color: #00695c;
+    border: 1px solid #b2dfdb;
+}
+
+.status-returnreceived {
+    background-color: #e6fffa;
+    color: #064e3b;
+    border: 1px solid #a7f3d0;
+}
+
+
+        .status-pending {
+            background-color: #cce5ff; /* Light blue background */
+            color: #004085; /* Dark blue text */
+            border: 1px solid #b8daff; /* Light blue border */
+            box-shadow: 0 0 3px rgba(204, 229, 255, 0.2),
+                        0 0 4px rgba(204, 229, 255, 0.1);
+        }
+
+        /* Chart Container Enhancement */
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Two columns */
+            gap: 20px; /* Space between charts */
+            margin-top: 20px;
+        }
+        .chart-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center content horizontally */
+            justify-content: center; /* Center content vertically */
+            text-align: center; /* Center text */
+        }
+        .chart-box h2 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        canvas {
+            max-width: 80%; /* Reduce chart size */
+            max-height: 300px; /* Limit height */
+        }
+
+
+        .filter-section {
+            display: flex;
+            gap: 15px; /* Space between elements */
+            margin-bottom: 20px;
+            align-items: center; /* Align items vertically in the center */
+            width: 100%; /* Make the section span the full width of the page */
+            justify-content: space-between; /* Distribute elements evenly across the width */
+            flex-wrap: wrap; /* Allow wrapping if the content overflows */
+        }
+
+        /* Optional: Adjust individual filter elements for better alignment */
+        .filter-section input[type="text"],
+        .filter-section select,
+        .filter-section button {
+            flex: 1; /* Allow elements to grow and fill available space */
+            min-width: 150px; /* Set a minimum width for better usability */
+            max-width: 300px; /* Limit the maximum width to prevent excessive stretching */
+        }
+
+        .filter-section input, .filter-section select, .filter-section button {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .filter-section button {
+            background-color:  #001B2E;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        .filter-section button:hover {
+            background-color: #022d4c;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="sidebar">
+            <div class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="/media/assets/images/logo.svg" alt="Logo" style="width: 24px; height: 24px;">
+                <span>Asset User</span>
+              </div>
+            <a href="{% url 'user_dashboard' %}" class="menu-item active">
+                <div>Dashboard</div>
+            </a>
+            <a href="{% url 'User_Asset_Inventory' %}" class="menu-item ">
+                <div>Asset Inventory</div>
+            </a>
+            <a href="{% url 'user_asset_requests' %}" class="menu-item ">
+                <div>Asset Requests</div>
+            </a>
+            
+        </div>
+
+        <div class="main-content">
+
+            <div class="header">
+                <h1>User Dashboard</h1>
+                <div class="user-info" onclick="openLogoutModal()">
+                    <span class="user-name">{{ user.username }}</span>
+                    <div class="user-avatar">
+                        {{ user.email.0|upper }}{{ user.email.1|lower }}
+                    </div>
+                </div>
+            </div>
+            
+            <div id="logoutModal" class="logout-modal">
+                <div class="logout-modal-content">
+                    <h3>Confirm Logout</h3>
+                    <p>Are you sure you want to logout?</p>
+                    <div class="logout-modal-buttons">
+                        <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+                        <button onclick="closeLogoutModal()" class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <!-- Bar Chart: Request Status Overview -->
+                <div class="chart-box">
+                    <div class="chart-box">
+                        <h2>Asset Category Distribution</h2>
+                        <canvas id="assetCategoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Line Chart: Monthly Asset Requests -->
+                <div class="chart-box">
+                    <h2>Monthly Asset Requests</h2>
+                    <canvas id="monthlyRequestsChart"></canvas>
+                </div>
+            </div>
+            <h2 style="padding-top:1.5rem; padding-bottom: 1rem;">Asset Request History</h2>
+
+            <div class="filter-section">
+                <input type="text" id="search" placeholder="Search across all columns" onkeyup="filterTable()">
+                <select id="statusFilter" onchange="filterTable()">
+                    <option value="">All Status</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Surrendered">Surrendered</option>
+                    <option value="Pending">Pending</option>
+                </select>
+                <select id="categoryFilter" onchange="filterTable()">
+                    <option value="">All categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+                <a href="{% url 'user_log_download_csv' %}" download>
+                    <button>Download CSV</button>
+                </a>
+                <a href="{% url 'user_log_download_pdf' %}" download>
+                    <button>Download PDF</button>
+                </a>
+            </div>
+            <div class="scrollable-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Asset Name</th>
+                            <th>Status</th>
+                            <th>Category</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in asset_requests %}
+                        <tr data-request-id="{{ request.RequestId }}" 
+                            data-asset-name="{{ request.AssetID.AssetName }}" 
+                            data-status="{{ request.Status }}" 
+                            data-category="{{ request.AssetID.Category }}"
+                            data-start-date="{{ request.StartDate }}" 
+                            data-end-date="{{ request.EndDate }}" 
+                            data-purpose="{{ request.Purpose }}">
+                            <td>{{ request.RequestId }}</td>
+                            <td>{{ request.AssetID.AssetName }}</td>
+                            <td>
+                                <div class="status status-{{ request.Status|lower|cut:" " }}">
+                                  {{ request.Status }}
+                                </div>
+                              </td>
+                              
+                              
+                            <td>{{ request.AssetID.Category }}</td>
+                            <td>{{ request.StartDate }}</td>
+                            <td>{{ request.EndDate }}</td>
+                            <td>{{ request.Purpose }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+         function filterTable() {
+            // Get filter values
+            const searchInput = document.getElementById('search').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+
+            // Get all rows in the table body
+            const rows = document.querySelectorAll('.scrollable-table tbody tr');
+
+            // Loop through each row and apply filters
+            rows.forEach(row => {
+                const requestId = row.dataset.requestId.toLowerCase();
+                const assetName = row.dataset.assetName.toLowerCase();
+                const status = row.dataset.status;
+                const startDate = row.dataset.startDate.toLowerCase();
+                const endDate = row.dataset.endDate.toLowerCase();
+                const purpose = row.dataset.purpose.toLowerCase();
+
+                // Check if the row matches the search input (all columns)
+                const matchesSearch =
+                    requestId.includes(searchInput) ||
+                    assetName.includes(searchInput) ||
+                    status.toLowerCase().includes(searchInput) ||
+                    startDate.includes(searchInput) ||
+                    endDate.includes(searchInput) ||
+                    purpose.includes(searchInput);
+
+                // Check if the row matches the status filter
+                const matchesStatus = statusFilter === '' || status === statusFilter;
+
+                // Check if the row matches the category filter
+                const matchesCategory = categoryFilter === '' || row.dataset.category === categoryFilter;
+
+                // Show or hide the row based on all filters
+                if (matchesSearch && matchesStatus && matchesCategory) {
+                    row.style.display = ''; // Show the row
+                } else {
+                    row.style.display = 'none'; // Hide the row
+                }
+            });
+        }
+        // Pie Chart: Asset Category Distribution
+        document.addEventListener('DOMContentLoaded', function () {
+            const categoryLabels = {{ category_labels|safe }};
+            const categoryData = {{ category_data|safe }};
+            const pieChartCtx = document.getElementById('assetCategoryChart').getContext('2d');
+
+            // Check if there are any assets in use
+            if (categoryData.length === 0) {
+                // Display a message instead of the chart
+                document.getElementById('assetCategoryChart').style.display = 'none'; // Hide the canvas
+                const chartContainer = document.getElementById('assetCategoryChart').parentElement;
+                const noDataMessage = document.createElement('p');
+                noDataMessage.textContent = 'No assets being used at this time.';
+                noDataMessage.style.textAlign = 'center';
+                noDataMessage.style.fontSize = '16px';
+                noDataMessage.style.color = '#888';
+                chartContainer.appendChild(noDataMessage);
+            } else {
+                // Render the pie chart if there is data
+                const assetCategoryChart = new Chart(pieChartCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: categoryLabels,
+                        datasets: [{
+                            label: 'Asset Count',
+                            data: categoryData,
+                            backgroundColor: [
+                                '#001B2E', // Main color
+                                '#002642', // Darker shade
+                                '#00335C', // Even darker shade
+                                '#FFA500', // Orange
+                                '#FF4500'  // Red
+                            ],
+                            borderColor: '#fff',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // Prevent fixed aspect ratio
+                        plugins: {
+                            legend: {
+                                position: 'bottom', // Move legend to bottom for better spacing
+                            },
+                            title: {
+                                display: true,
+                                text: 'Assets In Use by Category'
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+        const monthlyLabels = {{ monthly_labels|safe }};
+        const approvedData = {{ approved_data|safe }};
+        const pendingData = {{ pending_data|safe }};
+        const rejectedData = {{ rejected_data|safe }};
+        const surrenderedData = {{ surrendered_data|safe }}; // Include surrendered data
+        const lineChartCtx = document.getElementById('monthlyRequestsChart').getContext('2d');
+        const monthlyRequestsChart = new Chart(lineChartCtx, {
+            type: 'line',
+            data: {
+                labels: monthlyLabels,
+                datasets: [
+                    {
+                        label: 'Approved',
+                        data: approvedData,
+                        borderColor: '#001B2E', // Main color
+                        backgroundColor: 'rgba(0, 27, 46, 0.2)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#001B2E',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    },
+                    {
+                        label: 'Pending',
+                        data: pendingData,
+                        borderColor: '#FFA500', // Orange
+                        backgroundColor: 'rgba(255, 165, 0, 0.2)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#FFA500',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    },
+                    {
+                        label: 'Rejected',
+                        data: rejectedData,
+                        borderColor: '#FF4500', // Red
+                        backgroundColor: 'rgba(255, 69, 0, 0.2)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#FF4500',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    },
+                    {
+                        label: 'Surrendered',
+                        data: surrenderedData,
+                        borderColor: '#800080', // Purple
+                        backgroundColor: 'rgba(128, 0, 128, 0.2)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#800080',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Prevent fixed aspect ratio
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Monthly Asset Requests Trend'
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+        document.addEventListener("DOMContentLoaded", function() {
+            // Ensure the modal is hidden when the page loads
+            document.getElementById("logoutModal").style.display = "none";
+        });
+
+        // Open modal when avatar or username is clicked
+        function openLogoutModal() {
+            document.getElementById("logoutModal").style.display = "flex"; // Show modal
+        }
+
+        // Close modal when user clicks outside the modal content
+        function closeLogoutModal() {
+            document.getElementById("logoutModal").style.display = "none"; // Hide modal
+        }
+
+        // Close logout modal if user clicks outside the modal box
+        window.onclick = function(event) {
+            let logoutModal = document.getElementById("logoutModal");
+            // Check if the click happened outside of the modal content (to close it)
+            if (event.target === logoutModal) {
+                logoutModal.style.display = "none"; // Close modal
+            }
+        }
+
+
+    </script>
+</body>
+</html>

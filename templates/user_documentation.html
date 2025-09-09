@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Management System - User Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: black;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #001B2E, #003459);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 27, 46, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        nav {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            background: #001B2E;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .nav-btn:hover {
+            background: #003459;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 27, 46, 0.3);
+        }
+        
+        .nav-btn.active {
+            background: #003459;
+            box-shadow: 0 2px 5px rgba(0, 27, 46, 0.2);
+        }
+        
+        .documentation-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: none;
+        }
+        
+        .documentation-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: #001B2E;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #001B2E;
+            padding-bottom: 0.5rem;
+        }
+        
+        h3 {
+            color: #001B2E;
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem 0;
+            padding-left: 0.5rem;
+            border-left: 4px solid #001B2E;
+        }
+        
+        h4 {
+            color: #001B2E;
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.8rem 0;
+        }
+        
+        h5 {
+            color: #001B2E;
+            font-size: 1rem;
+            margin: 1rem 0 0.5rem 0;
+            font-weight: 600;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+            color: black;
+            text-align: justify;
+        }
+        
+        ul, ol {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+            color: black;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid #001B2E;
+        }
+        
+        .feature-card h5 {
+            margin-top: 0;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        th, td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        th {
+            background: #001B2E;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .highlight h5 {
+            color: #856404;
+            margin-top: 0;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #001B2E;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            background: #003459;
+            transform: translateY(-3px);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .documentation-section {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Asset Management System</h1>
+            <p class="subtitle" style="color: white; text-align: center;">Complete User Documentation Guide</p>
+        </header>
+
+        <nav>
+            <div class="nav-buttons">
+                <button class="nav-btn active" onclick="showSection('getting-started')">Getting Started</button>
+                <button class="nav-btn" onclick="showSection('admin-portal')">Admin Portal</button>
+                <button class="nav-btn" onclick="showSection('user-portal')">User Portal</button>
+            </div>
+        </nav>
+
+        <!-- Getting Started Section -->
+        <div id="getting-started" class="documentation-section active">
+            <h2>Getting Started</h2>
+            
+            <h3>1. Registration as User</h3>
+            <p>Once you open the link, you will see the Sign Up option located below the Login button.</p>
+            <p>To register as a user in the tool, please fill in the following details:</p>
+            <ul>
+                <li>Name</li>
+                <li>Email Address</li>
+                <li>Phone Number</li>
+                <li>Password</li>
+                <li>Confirm Password</li>
+            </ul>
+            <p>Complete the form to successfully create your account.</p>
+
+            <h3>2. Login as User/Admin</h3>
+            <p>To log in, please enter your credentials and click the Login button. Based on your role, you will be redirected to the appropriate dashboard.</p>
+        </div>
+
+        <!-- Admin Portal Section -->
+        <div id="admin-portal" class="documentation-section">
+            <h2>Admin Portal</h2>
+            <p>The Admin Portal includes several key components that help manage and monitor assets, users, and system operations efficiently.</p>
+
+            <h3>Admin Portal Components</h3>
+            <ul>
+                <li>Dashboard</li>
+                <li>Asset Inventory</li>
+                <li>Add Asset</li>
+                <li>Alerts</li>
+                <li>Maintenance</li>
+                <li>Asset Requests</li>
+                <li>Reports</li>
+                <li>Users</li>
+            </ul>
+
+            <h3>Dashboard</h3>
+            <p>The Dashboard offers a comprehensive overview for the admin, including:</p>
+            
+            <div class="feature-card">
+                <h5>Key Metrics</h5>
+                <ul>
+                    <li>Total number of assets</li>
+                    <li>Asset breakdown by Bond type and Type (Hardware/Software)</li>
+                    <li>Status overview showing assets that are Available, In Use, or Under Maintenance</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h5>Visual Insights</h5>
+                <ul>
+                    <li>Category distribution chart (pie or donut chart)</li>
+                    <li>Bar chart illustrating monthly asset usage trends</li>
+                    <li>Category-based filters for targeted insights</li>
+                    <li>Detailed table showing asset distribution by provider</li>
+                </ul>
+            </div>
+
+            <h3>Asset Inventory</h3>
+            <p>The Asset Inventory page shows a table with robust features that help manage assets effectively.</p>
+
+            <h4>Asset Details Table Features</h4>
+            <div class="feature-card">
+                <h5>Dynamic Column Selection</h5>
+                <p>Users can customize the table view by clicking "Select Columns" to show or hide specific data fields.</p>
+            </div>
+
+            <div class="feature-card">
+                <h5>Export Functionality</h5>
+                <p>Filtered asset data can be exported as an Excel file. You can filter by:</p>
+                <ul>
+                    <li>Type</li>
+                    <li>Category</li>
+                    <li>Status</li>
+                    <li>Asset name (via search)</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h5>Interactive Features</h5>
+                <ul>
+                    <li><strong>Vendor Information:</strong> Click vendor names to view detailed vendor information in a popup</li>
+                    <li><strong>Assigned To Column:</strong> User icons show asset assignments with usage details</li>
+                    <li><strong>Actions Column:</strong> Edit, Notify, and Delete options for each asset</li>
+                    <li><strong>Print Today's Assets:</strong> Print list of assets added today for tagging and labeling</li>
+                </ul>
+            </div>
+
+            <h3>Add Asset</h3>
+            <p>The Add Asset feature provides three distinct options for adding new assets to the system:</p>
+
+            <h4>1. Hardware Assets</h4>
+            <p>Manually add a hardware asset by entering specific details across several sections:</p>
+
+            <div class="feature-card">
+                <h5>Basic Asset Details</h5>
+                <ul>
+                    <li>Asset Bond Type, Name, Category, Number</li>
+                    <li>Serial Number, Part Number, Asset Type, Status</li>
+                    <li>Warehouse, Location, Provider, Classification</li>
+                    <li>Model, Purchase Date, Cost, Warranty</li>
+                    <li>Bond Expiry Date, Specification, Image, Supporting Documents</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h5>Vendor Details</h5>
+                <ul>
+                    <li>Vendor Name, Contact, Notes</li>
+                    <li>Add Custom Vendor button for seamless vendor management</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h5>Maintenance & Calibration Information</h5>
+                <ul>
+                    <li>Last Maintenance Date and Interval</li>
+                    <li>Calibration Date, Authority, Notes, Interval, Certificate</li>
+                </ul>
+            </div>
+
+            <h4>2. Software Assets</h4>
+            <p>The Software Asset form includes the following required and optional fields:</p>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Asset Name</td>
+                            <td>Yes</td>
+                            <td>Name of the software</td>
+                        </tr>
+                        <tr>
+                            <td>Software Version</td>
+                            <td>Yes</td>
+                            <td>Version number</td>
+                        </tr>
+                        <tr>
+                            <td>Category</td>
+                            <td>Yes</td>
+                            <td>Software category selection</td>
+                        </tr>
+                        <tr>
+                            <td>Asset Provider</td>
+                            <td>Yes</td>
+                            <td>Provider selection</td>
+                        </tr>
+                        <tr>
+                            <td>Purchase Date</td>
+                            <td>Yes</td>
+                            <td>Date of purchase</td>
+                        </tr>
+                        <tr>
+                            <td>Cost</td>
+                            <td>Yes</td>
+                            <td>Software cost</td>
+                        </tr>
+                        <tr>
+                            <td>Renewal Date</td>
+                            <td>No</td>
+                            <td>License renewal date</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>3. Upload via Excel</h4>
+            <p>For bulk asset entry, upload multiple assets using a formatted Excel file with these required columns:</p>
+            
+            <div class="highlight">
+                <h5>Required Excel Columns</h5>
+                <p>Asset Bond Type | Asset Name | Category | Model | Specification | Asset Number | Serial Number | Part Number | Asset Type | Asset Status | Item Floor | Storage Location | Rack Number | Storage Type | Location | Asset Provider | Classification | Purchase Date | Cost | Warranty | Vendor</p>
+            </div>
+
+            <h3>Alerts</h3>
+            <p>The Alerts section helps admins stay on top of critical asset-related events:</p>
+            
+            <div class="feature-card">
+                <h5>Alert Types</h5>
+                <ul>
+                    <li>Maintenance Due</li>
+                    <li>Bond Expiry</li>
+                    <li>Software Renewals</li>
+                    <li>Pending Requests</li>
+                    <li>Warranty Expiry</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h5>Key Features</h5>
+                <ul>
+                    <li>Filter by Alert Type</li>
+                    <li>Show New Alerts with red background highlighting</li>
+                    <li>Alert status tracking (new alerts become "seen" after viewing)</li>
+                </ul>
+            </div>
+
+            <h3>Maintenance</h3>
+            <p>The Maintenance page provides a centralized view of all assets with scheduled or overdue maintenance.</p>
+            
+            <div class="feature-card">
+                <h5>Features</h5>
+                <ul>
+                    <li>Asset list with maintenance status (Overdue/Upcoming)</li>
+                    <li>Search functionality for specific assets</li>
+                    <li>Filter by Category and Status</li>
+                    <li>Proactive maintenance management</li>
+                </ul>
+            </div>
+
+            <h3>Asset Requests</h3>
+            <p>This section provides comprehensive views of both Asset Requests and Asset Returns with easy navigation between tabs.</p>
+
+            <h4>1. Asset Requests Tab</h4>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Information</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Asset Name & Number</td>
+                            <td>Identification details</td>
+                        </tr>
+                        <tr>
+                            <td>Requested By</td>
+                            <td>User who made the request</td>
+                        </tr>
+                        <tr>
+                            <td>From/To Date</td>
+                            <td>Usage period</td>
+                        </tr>
+                        <tr>
+                            <td>Status & Stage</td>
+                            <td>Current status with full lifecycle history</td>
+                        </tr>
+                        <tr>
+                            <td>Actions</td>
+                            <td>Approve, Reject, Issue options</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>2. Asset Returns Tab</h4>
+            <p>Similar table structure showing returned asset details with Accept, Received, and Closed action options.</p>
+
+            <h3>Reports</h3>
+            <p>The Reports tab provides powerful tools for generating, analyzing, and customizing asset-related reports.</p>
+
+            <h4>Report Types</h4>
+            <div class="feature-card">
+                <h5>1. Asset Data</h5>
+                <p>Basic details of all assets including name, type, number, status, and assigned user information.</p>
+            </div>
+
+            <div class="feature-card">
+                <h5>2. Cost Analysis</h5>
+                <p>Comprehensive cost overview segmented by Provider and Asset Classification for understanding cost distribution.</p>
+            </div>
+
+            <div class="feature-card">
+                <h5>3. Idle Days Report</h5>
+                <p>Displays idle days count for each asset to monitor underutilized resources and improve allocation efficiency.</p>
+            </div>
+
+            <h4>Customize Reports Feature</h4>
+            <p>Access the Custom Layout tab to design your own report layout with these tools:</p>
+            <ul>
+                <li><strong>Layout Selection:</strong> Choose between Free Layout and Title Layout modes</li>
+                <li><strong>Chart Panel:</strong> Drag and drop pre-built chart widgets onto the canvas</li>
+                <li><strong>Customization:</strong> Resize charts and modify colors, labels, and formatting</li>
+                <li><strong>Configuration Management:</strong> Download and load saved layout configurations</li>
+                <li><strong>Export:</strong> Download customized reports as PDFs</li>
+            </ul>
+
+            <h3>Users Tab</h3>
+            <p>The Users tab provides an overview of all registered users in the system.</p>
+            
+            <div class="feature-card">
+                <h5>Key Features</h5>
+                <ul>
+                    <li>User listing with name, email, role, and contact information</li>
+                    <li>Admin ability to delete users for access control</li>
+                    <li>User database maintenance and security management</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- User Portal Section -->
+        <div id="user-portal" class="documentation-section">
+            <h2>User Portal</h2>
+            
+            <h3>Dashboard</h3>
+            <p>The User Dashboard provides a comprehensive overview of your asset activities and system-wide statistics.</p>
+
+            <h4>Key Dashboard Features</h4>
+            
+            <div class="feature-card">
+                <h5>Asset Category Distribution</h5>
+                <ul>
+                    <li>Visual representation of assets currently being used by category</li>
+                    <li>Shows breakdown of actively assigned assets</li>
+                    <li>Displays "No assets being used at this time" when no assets are assigned</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h5>Monthly Asset Requests</h5>
+                <p>Interactive trend chart showing:</p>
+                <ul>
+                    <li>Approved requests</li>
+                    <li>Pending requests</li>
+                    <li>Rejected requests</li>
+                    <li>Completed requests</li>
+                    <li>Return Requested requests</li>
+                    <li>Return Accepted requests</li>
+                    <li>Return Received requests</li>
+                    <li>Surrendered requests</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h5>Asset Request History</h5>
+                <p>Comprehensive table with advanced features:</p>
+                <ul>
+                    <li>Search across all columns</li>
+                    <li>Filter by status and category</li>
+                    <li>Export options (CSV and PDF)</li>
+                    <li>Complete request tracking with Request ID, Asset Name, Status, Category, dates, and Purpose</li>
+                </ul>
+            </div>
+
+            <h3>Asset Inventory</h3>
+            <p>Browse available assets and make new requests through a comprehensive asset view.</p>
+
+            <h4>Key Features</h4>
+            
+            <div class="feature-card">
+                <h5>Asset Details Table</h5>
+                <ul>
+                    <li><strong>Dynamic Column Selection:</strong> Customize table view by showing/hiding specific data fields</li>
+                    <li><strong>Export Functionality:</strong> Export filtered data as Excel files</li>
+                    <li><strong>Vendor Information:</strong> Click vendor names for detailed information popups</li>
+                    <li><strong>Asset Request Functionality:</strong> Request available assets directly from the inventory</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h5>Search and Filter Options</h5>
+                <ul>
+                    <li>Advanced search across multiple asset fields</li>
+                    <li>Category-based filtering</li>
+                    <li>Status-based filtering (Available, In Use)</li>
+                    <li>Type filtering (Hardware/Software)</li>
+                </ul>
+            </div>
+
+            <h3>Asset Requests</h3>
+            <p>Comprehensive view of both Asset Requests and Asset Returns with easy navigation between tabs.</p>
+
+            <h4>Navigation & Filtering</h4>
+            <div class="feature-card">
+                <h5>Navigation Options</h5>
+                <ul>
+                    <li>Asset Requests Tab: View and manage outgoing requests</li>
+                    <li>Asset Returns Tab: View and manage asset returns</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h5>Filtering Capabilities</h5>
+                <ul>
+                    <li>Stage Filter: Filter by request/return stages</li>
+                    <li>Date Range Filter: Filter by specific date ranges</li>
+                    <li>Stage Date: Filter by specific stage dates</li>
+                </ul>
+            </div>
+
+            <h4>1. Asset Requests Tab</h4>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Asset Name</td>
+                            <td>Name of the requested asset</td>
+                        </tr>
+                        <tr>
+                            <td>Requested By</td>
+                            <td>Your name (the requester)</td>
+                        </tr>
+                        <tr>
+                            <td>From/To Date</td>
+                            <td>Asset usage period</td>
+                        </tr>
+                        <tr>
+                            <td>Purpose</td>
+                            <td>Reason for requesting the asset</td>
+                        </tr>
+                        <tr>
+                            <td>Status</td>
+                            <td>Color-coded current status (Approved, Pending, Rejected, Completed)</td>
+                        </tr>
+                        <tr>
+                            <td>Requested At</td>
+                            <td>Submission timestamp</td>
+                        </tr>
+                        <tr>
+                            <td>Actions</td>
+                            <td>Available actions based on status (Received button for approved requests)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="highlight">
+                <h5>Request Status Flow</h5>
+                <p>Requested → Pending → Approved/Rejected → Issued → Received</p>
+            </div>
+
+            <h4>2. Asset Returns Tab</h4>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Column</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Asset Name</td>
+                            <td>Name of the returned asset</td>
+                        </tr>
+                        <tr>
+                            <td>Returned By</td>
+                            <td>Your name (the returner)</td>
+                        </tr>
+                        <tr>
+                            <td>Issue Date</td>
+                            <td>Original asset issue date</td>
+                        </tr>
+                        <tr>
+                            <td>Return Date</td>
+                            <td>Date when asset was returned</td>
+                        </tr>
+                        <tr>
+                            <td>Purpose</td>
+                            <td>Original request purpose</td>
+                        </tr>
+                        <tr>
+                            <td>Status</td>
+                            <td>Color-coded return status (Surrendered, Return Received, Return Accepted)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="highlight">
+                <h5>Return Status Flow</h5>
+                <p>Returned → Return Received → Surrendered → Closed</p>
+            </div>
+        </div>
+    </div>
+
+    <button class="back-to-top" onclick="scrollToTop()">↑</button>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.documentation-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Scroll to top of page
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function scrollToTop() {
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // Show/hide back to top button
+        window.addEventListener('scroll', function() {
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // Add smooth scrolling for internal links
+        document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('a[href^="#"]');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
