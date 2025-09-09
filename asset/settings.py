@@ -202,7 +202,7 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.office365.com"  # Outlook SMTP server
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "fixed-term.Bhuvandeep.Kanekanti@bosch.com"  # Your Outlook email
-EMAIL_HOST_PASSWORD = "Madhavi707070"  # Use an App Password if 2FA is enabled
+EMAIL_HOST_USER = "fixed-term.Jatin.Khatta@in.bosch.com"  # Your Outlook email
+EMAIL_HOST_PASSWORD = "Anteater@123"  # Use an App Password if 2FA is enabled
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 

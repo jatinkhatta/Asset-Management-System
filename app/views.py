@@ -1266,42 +1266,7 @@ from .models import User, Vendor, Asset, Calibration
 @require_POST
 
 # REPLACE this line (around line 1257):
-import win32com.client
-
-# WITH this platform-safe code:
-import platform
-
-# Use this function instead of direct win32com imports
-def send_email_wrapper(recipient_email, subject, body, cc_email=None):
-    """Platform-safe email sending function"""
-    
-    if platform.system() == "Windows":
-        try:
-            import win32com.client as win32
-            outlook = win32.Dispatch('outlook.application')
-            mail = outlook.CreateItem(0)
-            mail.To = recipient_email
-            if cc_email:
-                mail.CC = cc_email
-            mail.Subject = subject
-            mail.Body = body
-            mail.Send()
-            return True
-        except ImportError:
-            print("pywin32 not available on this system")
-            return False
-        except Exception as e:
-            print(f"Email error: {e}")
-            return False
-    else:
-        # On Linux (Render), use console logging or Django's email backend
-        print(f"📧 Email would be sent (Linux environment):")
-        print(f"   To: {recipient_email}")
-        print(f"   CC: {cc_email}")
-        print(f"   Subject: {subject}")
-        print(f"   Body: {body}")
-        return True  # Simulate success
-
+# import win32com.client
 
 def send_email_notification(request):
     """
@@ -4187,34 +4152,36 @@ def send_outlook_email(recipient_email, subject, body, cc_email=None):
         logger.warning("Cannot send email - no recipient provided.")
         return False
 
+    # Send email using Django's email backend
+    print("Sending email via Django...")
     try:
-        # Initialize Outlook COM object
-        outlook = win32.Dispatch('outlook.application')
-        mail = outlook.CreateItem(0)  # 0 = olMailItem
-
-        mail.To = recipient_email
-        if cc_email:
-            mail.CC = cc_email
-        mail.Subject = subject
-        mail.Body = body
-
-        # Optional: Set importance level
-        # mail.Importance = 2  # 2 = High, 1 = Normal, 0 = Low
-
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
+        # Convert recipients list to string for email
+        recipient_list = list(set(recipient_email))  # Remove duplicates
+        
         # Send the email
-        mail.Send()
-
-        logger.info(f"Email sent successfully to {recipient_email}, CC: {cc_email or 'None'}, Subject: {subject}")
-        return True
-
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=recipient_list,
+            fail_silently=False,
+        )
+        print("Email sent successfully via Django!")
+        
     except Exception as e:
-        logger.error(f"Failed to send Outlook email to {recipient_email}: {e}", exc_info=True)
-        if "Invalid class string" in str(e):
-            logger.error("Outlook is not registered correctly on this machine.")
-        elif "RPC server is unavailable" in str(e):
-            logger.error("Outlook or DCOM is not available. Ensure Outlook is running.")
-        return False
-
+        print(f"ERROR sending email via Django: {str(e)}")
+        # Fallback: just log the email content for debugging
+        print(f"Email would have been sent to: {recipient_email}")
+        print(f"Subject: {subject}")
+        print(f"Content: {body}")
+        
+        return JsonResponse({
+            'success': False,
+            'message': f'Error sending email: {str(e)}'
+        })
 from django.http import Http404
 def update_request_status(request, request_id):
     """
