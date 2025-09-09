@@ -119,13 +119,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-
-# Tell Django to copy static files into this directory
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Enable compression and caching for Whitenoise
+# Whitenoise configuration for manifest storage
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_IGNORE_MISSING_FILES = True
+WHITENOISE_MANIFEST_STRICT = False
+
+# Add this to prevent source map processing issues
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['map']  # Skip processing .map files
 
 # Media files (Uploaded by users)
 MEDIA_URL = '/media/'
@@ -205,3 +209,4 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "fixed-term.Bhuvandeep.Kanekanti@bosch.com"  # Your Outlook email
 EMAIL_HOST_PASSWORD = "Madhavi707070"  # Use an App Password if 2FA is enabled
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
