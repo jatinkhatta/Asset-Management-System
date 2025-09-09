@@ -5064,6 +5064,40 @@ def upload_excel(request):
 
 
 
+# In your views.py where you send emails
+import platform
+
+def send_outlook_email(recipient_email, subject, body, cc_email=None):
+    """Sends email using Outlook on Windows, falls back to console on other platforms"""
+    
+    if platform.system() != "Windows":
+        # On Render (Linux), just log the email instead of trying to send via Outlook
+        print(f"📧 Email would be sent (Linux environment):")
+        print(f"   To: {recipient_email}")
+        print(f"   CC: {cc_email}")
+        print(f"   Subject: {subject}")
+        print(f"   Body: {body}")
+        return True  # Return success even though we just logged it
+    
+    # Windows-specific code (only runs on Windows)
+    try:
+        import win32com.client as win32
+        outlook = win32.Dispatch('outlook.application')
+        mail = outlook.CreateItem(0)
+        mail.To = recipient_email
+        if cc_email:
+            mail.CC = cc_email
+        mail.Subject = subject
+        mail.Body = body
+        mail.Send()
+        return True
+    except ImportError:
+        print("pywin32 not available - email not sent")
+        return False
+    except Exception as e:
+        print(f"Outlook error: {e}")
+        return False
+
 
 
 
