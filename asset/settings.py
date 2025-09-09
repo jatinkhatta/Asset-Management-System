@@ -60,7 +60,7 @@ SESSION_COOKIE_AGE = 1209600  # 2 weeks, in seconds
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # 'whitenoise.middleware.WhiteNoiseMiddleware', 
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -115,22 +115,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static') 
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 # Whitenoise configuration for manifest storage
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-# WHITENOISE_IGNORE_MISSING_FILES = True
-# WHITENOISE_MANIFEST_STRICT = False
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_IGNORE_MISSING_FILES = True
+WHITENOISE_MANIFEST_STRICT = False
 
 # # Add this to prevent source map processing issues
-# WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['map']  # Skip processing .map files
+WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['map']  # Skip processing .map files
 
 # Media files (Uploaded by users)
 MEDIA_URL = '/media/'
