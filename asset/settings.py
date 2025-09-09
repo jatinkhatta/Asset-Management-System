@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-br8(j2ow7i$&9(i!*1=yx%b1%8j0e96l068-*dc%5!#y9sxvh@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = 'RENDER' not in os.environ
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','*','127.0.0.1:8081']
 # Application definition
@@ -40,10 +41,17 @@ INSTALLED_APPS = [
 ]
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # Tells Django to use SQLite as the database engine                      
-        'NAME': BASE_DIR / 'db.sqlite3',         # Path to the database file
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Override the default database with PostgreSQL from Render
+if 'DATABASE_URL' in os.environ:
+    DATABASES['default'] = dj_database_url.config(
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 
 
 # In settings.py
@@ -52,6 +60,7 @@ SESSION_COOKIE_AGE = 1209600  # 2 weeks, in seconds
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -103,9 +112,20 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static') 
+# STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static') 
 
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
+
+STATIC_URL = '/static/'
+
+# Tell Django to copy static files into this directory
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Enable compression and caching for Whitenoise
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files (Uploaded by users)
 MEDIA_URL = '/media/'
