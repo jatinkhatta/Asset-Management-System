@@ -1254,7 +1254,8 @@ def update_asset(request, asset_id):
 
     # Fallback redirect if POST logic somehow doesn't redirect (e.g., error before redirect)
     return redirect(reverse('Asset Inventory'))
-import win32com.client
+# import win32com.client
+
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -1263,6 +1264,45 @@ from .models import User, Vendor, Asset, Calibration
 
 @csrf_exempt
 @require_POST
+
+# REPLACE this line (around line 1257):
+import win32com.client
+
+# WITH this platform-safe code:
+import platform
+
+# Use this function instead of direct win32com imports
+def send_email_wrapper(recipient_email, subject, body, cc_email=None):
+    """Platform-safe email sending function"""
+    
+    if platform.system() == "Windows":
+        try:
+            import win32com.client as win32
+            outlook = win32.Dispatch('outlook.application')
+            mail = outlook.CreateItem(0)
+            mail.To = recipient_email
+            if cc_email:
+                mail.CC = cc_email
+            mail.Subject = subject
+            mail.Body = body
+            mail.Send()
+            return True
+        except ImportError:
+            print("pywin32 not available on this system")
+            return False
+        except Exception as e:
+            print(f"Email error: {e}")
+            return False
+    else:
+        # On Linux (Render), use console logging or Django's email backend
+        print(f"📧 Email would be sent (Linux environment):")
+        print(f"   To: {recipient_email}")
+        print(f"   CC: {cc_email}")
+        print(f"   Subject: {subject}")
+        print(f"   Body: {body}")
+        return True  # Simulate success
+
+
 def send_email_notification(request):
     """
     Send email notifications to users, vendors, or calibration authorities
@@ -5063,40 +5103,6 @@ def upload_excel(request):
     return render(request, 'admin/upload_excel.html')
 
 
-
-# In your views.py where you send emails
-import platform
-
-def send_outlook_email(recipient_email, subject, body, cc_email=None):
-    """Sends email using Outlook on Windows, falls back to console on other platforms"""
-    
-    if platform.system() != "Windows":
-        # On Render (Linux), just log the email instead of trying to send via Outlook
-        print(f"📧 Email would be sent (Linux environment):")
-        print(f"   To: {recipient_email}")
-        print(f"   CC: {cc_email}")
-        print(f"   Subject: {subject}")
-        print(f"   Body: {body}")
-        return True  # Return success even though we just logged it
-    
-    # Windows-specific code (only runs on Windows)
-    try:
-        import win32com.client as win32
-        outlook = win32.Dispatch('outlook.application')
-        mail = outlook.CreateItem(0)
-        mail.To = recipient_email
-        if cc_email:
-            mail.CC = cc_email
-        mail.Subject = subject
-        mail.Body = body
-        mail.Send()
-        return True
-    except ImportError:
-        print("pywin32 not available - email not sent")
-        return False
-    except Exception as e:
-        print(f"Outlook error: {e}")
-        return False
 
 
 
