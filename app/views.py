@@ -1264,8 +1264,6 @@ from django.conf import settings
 
 from .models import User, Vendor, Asset, Calibration
 
-@csrf_exempt
-@require_POST
 
 def send_email_notification(request):
     """
