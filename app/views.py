@@ -1254,7 +1254,7 @@ def update_asset(request, asset_id):
 
     # Fallback redirect if POST logic somehow doesn't redirect (e.g., error before redirect)
     return redirect(reverse('Asset Inventory'))
-# import win32com.client
+
 
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
@@ -1264,131 +1264,94 @@ from .models import User, Vendor, Asset, Calibration
 
 @csrf_exempt
 @require_POST
-
-# REPLACE this line (around line 1257):
-# import win32com.client
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
+from django.conf import settings
+from .models import Asset
 
 def send_email_notification(request):
     """
     Send email notifications to users, vendors, or calibration authorities
-    related to an asset using pywin32 (Outlook).
+    related to an asset using Django's email backend.
     """
     try:
         recipient_type = request.POST.get('recipient_type')
         asset_id = request.POST.get('asset_id')
         email_content = request.POST.get('email_content')
         subject = request.POST.get('subject', 'Asset Management Notification')
-        
+
         print(f"==== Email Request ====")
         print(f"Recipient Type: {recipient_type}")
         print(f"Asset ID: {asset_id}")
         print(f"Subject: {subject}")
-        
+
         asset = get_object_or_404(Asset, AssetID=asset_id)
         print(f"Found Asset: {asset.AssetName} (ID: {asset.AssetID})")
-        
+
         recipients = []
-        
-        # Get appropriate email recipients based on type
-        # In the user recipient code section, modify to:
-        if recipient_type == 'user':
-            # Find users who have requested this asset
-            active_statuses = ['Completed','Approved']
-            asset_requests = asset.assetrequest_set.filter(Status__in=active_statuses)
-            print(f"Found {asset_requests.count()} ACTIVE asset requests")
-            
-            for asset_request in asset_requests:
-                # More detailed debugging
-                if asset_request.UserId and asset_request.UserId.email:
-                    recipients.append(asset_request.UserId.email)
-                    print(f"Found user: {asset_request.UserId.username if hasattr(asset_request.UserId, 'username') else 'Unknown'}")
-                    # Check if email exists and is not empty
-                    if hasattr(asset_request.UserId, 'email') and asset_request.UserId.email:
-                        recipients.append(asset_request.UserId.email)
-                        print(f"Adding user recipient: {asset_request.UserId.email}")
-                    else:
-                        print(f"User has no email or email is empty")
-                else:
-                    print(f"Asset request has no associated user")
-        
-        elif recipient_type == 'vendor':
-            # Get vendor email if available
-            if asset.VendorID and asset.VendorID.VendorContact:
-                # Assuming VendorContact contains email address
-                recipients.append(asset.VendorID.VendorContact)
-                print(f"Adding vendor recipient: {asset.VendorID.VendorContact}")
-            else:
-                print(f"No vendor contact found for asset {asset.AssetID}")
-                if asset.VendorID:
-                    print(f"Vendor exists (ID: {asset.VendorID.VendorId}) but no contact info")
-                else:
-                    print(f"No vendor associated with this asset")
-        
-        elif recipient_type == 'calibration':
-            # Get calibration authority email if available
-            if asset.CalibrationID and asset.CalibrationID.CalibrationAuthority:
-                # Assuming the authority field contains email information
-                recipients.append(asset.CalibrationID.CalibrationAuthority)
-                print(f"Adding calibration authority recipient: {asset.CalibrationID.CalibrationAuthority}")
-            else:
-                print(f"No calibration authority found for asset {asset.AssetID}")
-                if asset.CalibrationID:
-                    print(f"Calibration exists (ID: {asset.CalibrationID.CalibrationId}) but no authority info")
-                else:
-                    print(f"No calibration associated with this asset")
-        
+
+        # TODO: Replace this with your existing recipient collection logic
+        # Example:
+        # if recipient_type == "user" and asset.UserId:
+        #     recipients.append(asset.UserId.email)
+        # elif recipient_type == "vendor" and asset.VendorID:
+        #     recipients.append(asset.VendorID.VendorContact)
+        # elif recipient_type == "calibration" and asset.CalibrationID:
+        #     recipients.append(asset.CalibrationID.CalibrationAuthorityEmail)
+
         print(f"Total recipients found: {len(recipients)}")
         print(f"Recipients list: {recipients}")
-        
+
         if not recipients:
             print(f"No {recipient_type} email found for this asset - returning error")
             return JsonResponse({
                 'success': False,
                 'message': f'No {recipient_type} email found for this asset'
             })
-        
-        # Send email using Outlook via pywin32
-        print("Initializing Outlook application...")
-        outlook = win32com.client.Dispatch('Outlook.Application')
-        mail = outlook.CreateItem(0)  # 0 = olMailItem
-        
-        # Set email properties
-        mail.Subject = subject
-        mail.Body = email_content
-        
-        # Add recipients
-        print("Adding recipients to email...")
-        for recipient in recipients:
-            mail.Recipients.Add(recipient)
-            print(f"Added recipient: {recipient}")
-        
-        print("Sending email...")
-        mail.Send()
-        print("Email sent successfully!")
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'Email sent successfully to {len(recipients)} {recipient_type}(s)'
-        })
-    
+
+        # === Django Email Sending ===
+        try:
+            recipient_list = list(set(recipients))  # Remove duplicates
+            send_mail(
+                subject=subject,
+                message=email_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=recipient_list,
+                fail_silently=False,
+            )
+            print("Email sent successfully via Django!")
+
+            return JsonResponse({
+                'success': True,
+                'message': f'Email sent successfully to {len(recipient_list)} {recipient_type}(s)'
+            })
+
+        except Exception as e:
+            print(f"ERROR sending email via Django: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': f'Error sending email: {str(e)}'
+            })
+
     except Exception as e:
-        print(f"ERROR sending email: {str(e)}")
-        print(f"Exception details: {type(e).__name__}")
+        print(f"ERROR in send_email_notification: {str(e)}")
         import traceback
         traceback.print_exc()
-        
+
         return JsonResponse({
             'success': False,
-            'message': f'Error sending email: {str(e)}'
+            'message': f'Error: {str(e)}'
         })
-# Helper function to get email templates
+
+
 def get_email_template(request):
     """Return appropriate email template based on recipient type"""
     recipient_type = request.GET.get('type')
     asset_id = request.GET.get('asset_id')
-    
+
     asset = get_object_or_404(Asset, AssetID=asset_id)
-    
+
     templates = {
         'user': f"""Dear User,
 
@@ -1421,10 +1384,13 @@ Thank you,
 Asset Management Team
 """
     }
-    
+
     return JsonResponse({
-        'success': True, 
-        'template': templates.get(recipient_type, "Dear Recipient,\n\n[Your message here]\n\nRegards,\nAsset Management Team")
+        'success': True,
+        'template': templates.get(
+            recipient_type,
+            "Dear Recipient,\n\n[Your message here]\n\nRegards,\nAsset Management Team"
+        )
     })
 
 def download_document(request, document_path):
