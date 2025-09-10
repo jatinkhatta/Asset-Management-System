@@ -1258,17 +1258,14 @@ def update_asset(request, asset_id):
 
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST, csrf_exempt
+from django.core.mail import send_mail
+from django.conf import settings
+
 from .models import User, Vendor, Asset, Calibration
 
 @csrf_exempt
 @require_POST
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from django.core.mail import send_mail
-from django.conf import settings
-from .models import Asset
 
 def send_email_notification(request):
     """
