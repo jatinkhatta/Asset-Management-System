@@ -4089,7 +4089,7 @@ if platform.system() == "Windows":
 else:
     logging.warning("Platform is not Windows. Outlook email automation (pywin32) is disabled.")
     win32 = None # Flag that we are not on Windows
-import win32com.client as win32
+
 import logging
 
 # Setup logger
